@@ -28,6 +28,8 @@ dotnet add package Npgsql --version 6.0.0-rc.1
 
 - https://github.com/npgsql/npgsql
 - https://www.nuget.org/packages/Npgsql/6.0.0-rc.1
+- https://github.com/npgsql/npgsql/issues/2779
+
 
 
 

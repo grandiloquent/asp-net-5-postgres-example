@@ -1,6 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Psycho
@@ -20,12 +26,10 @@ namespace Psycho
         }
 
         [HttpGet]
-        public async Task<string> Get(string controller)
+        public async Task<IEnumerable<Video>> Get(string controller)
         {
-            var result = await _dataService.InsertVideo(new Video("1", "2", "3"));
-            Console.WriteLine(result);
-            var databases = await _dataService.ListAllDatabases();
-            return string.Join("\n", databases);
+            var videos = await _dataService.QueryAllVideos();
+            return videos;
         }
 
         [HttpGet("ck")]
@@ -34,9 +38,17 @@ namespace Psycho
             return _ckClient.GetBaseAddress();
         }
 
-        [HttpPost("/upload")]
-        public IActionResult Upload()
+        [HttpPost("upload")]
+        public async Task<IActionResult> Upload([FromForm(Name = "file")] List<IFormFile> formFiles, string controller)
         {
+            await using var buffer = new MemoryStream();
+
+            await formFiles.First().CopyToAsync(buffer);
+            using var reader = new StreamReader(buffer, Encoding.UTF8);
+            var videos = JsonSerializer.Deserialize<List<Video>>(await reader.ReadToEndAsync());
+            await _dataService.InsertVideosBatch(videos);
+            // if (formFile != null)
+            //     Console.WriteLine("{0} {1} {2}", formFile.FileName, formFile.Length, formFile.ContentType);
             return Ok();
         }
     }

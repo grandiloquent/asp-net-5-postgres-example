@@ -1,19 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Npgsql;
 
 namespace Psycho
 {
-    public record Video(string Title, string Url, string Thumbnail)
-    {
-        public long Id { get; set; }
-        public string PublishDate { get; set; }
-        public int Duration { get; set; }
-        public DateTime UpdateAt { get; set; }
-        public DateTime CreateAt { get; set; }
-    }
-
     public class DataService : IDataService
     {
         private readonly NpgsqlConnection _connection;
@@ -29,7 +21,7 @@ namespace Psycho
             List<Video> videos = new();
             await _connection.OpenAsync();
             await using NpgsqlCommand command =
-                new("Select Id,Title,Url,Thumbnail,PublishDate,Duration,UpdateAt,CreateAt FROM psycho", _connection);
+                new("Select id,title,url,thumbnail,publish_date,duration,update_at,create_at FROM videos", _connection);
             await using var reader = await command.ExecuteReaderAsync();
             while (reader.Read())
             {
@@ -39,8 +31,8 @@ namespace Psycho
                 var thumbnail = reader.GetString(3);
                 var publishDate = reader.GetString(4);
                 var duration = reader.GetInt32(5);
-                var updateAt = reader.GetDateTime(6);
-                var createAt = reader.GetDateTime(7);
+                var updateAt = reader.GetInt32(6);
+                var createAt = reader.GetInt32(7);
                 Video video = new(title, url, thumbnail)
                 {
                     CreateAt = createAt,
@@ -57,12 +49,40 @@ namespace Psycho
             return videos;
         }
 
+        public async Task InsertVideosBatch(IEnumerable<Video> videos)
+        {
+            await _connection.OpenAsync();
+            await using NpgsqlCommand command =
+                new(
+                    "INSERT INTO videos (title,url,thumbnail,publish_date,duration,update_at,create_at) SELECT * FROM UNNEST(@Title,@Url,@Thumbnail,@PublishDate,@Duration,@UpdateAt,@CreateAt)"
+                    , _connection);
+            var enumerable = videos as Video[] ?? videos.ToArray();
+            var timestamp = DateTime.UtcNow.GetUnixTimeStamp();
+            var timestamps = new long[enumerable.Length];
+            for (var i = 0; i < timestamps.Length; i++)
+            {
+                timestamps[i] = timestamp;
+            }
+
+            command.Parameters.AddWithValue("@Title", enumerable.Select(i => i.Title).ToArray());
+            command.Parameters.AddWithValue("@Url", enumerable.Select(i => i.Url).ToArray());
+            command.Parameters.AddWithValue("@Thumbnail", enumerable.Select(i => i.Thumbnail).ToArray());
+            command.Parameters.AddWithValue("@PublishDate", enumerable.Select(i => i.PublishDate).ToArray());
+            command.Parameters.AddWithValue("@Duration", enumerable.Select(i => i.Duration).ToArray());
+            command.Parameters.AddWithValue("@UpdateAt", timestamps);
+            command.Parameters.AddWithValue("@CreateAt", timestamps);
+
+            await command.ExecuteNonQueryAsync();
+            
+            await _connection.CloseAsync();
+        }
+
         public async Task<int> InsertVideo(Video video)
         {
             await _connection.OpenAsync();
             await using NpgsqlCommand command =
                 new(
-                    "INSERT INTO videos (title,url,thumbnail,publish_date,duration) VALUES (@Title,@Url,@Thumbnail,@PublishDate,@Duration)"
+                    "INSERT INTO videos (title,url,thumbnail,publish_date,duration,create_at,update_at) VALUES (@Title,@Url,@Thumbnail,@PublishDate,@Duration,@CreateAt,@UpdateAt)"
                     , _connection);
             command.Parameters.AddWithValue("@Title", video.Title);
             command.Parameters.AddWithValue("@Url", video.Url);
@@ -70,6 +90,9 @@ namespace Psycho
 
             command.Parameters.AddWithValue("@PublishDate", video.PublishDate ?? string.Empty);
             command.Parameters.AddWithValue("@Duration", video.Duration);
+            var timestamp = DateTime.UtcNow.GetUnixTimeStamp();
+            command.Parameters.AddWithValue("@CreateAt", timestamp);
+            command.Parameters.AddWithValue("@UpdateAt", timestamp);
 
             var result = await command.ExecuteScalarAsync();
 
@@ -136,8 +159,8 @@ CREATE TABLE IF NOT EXISTS public.videos
     "thumbnail" text,
     "publish_date" text,
     "duration" bigint,
-    "update_at" time without time zone NOT NULL DEFAULT current_timestamp,
-    "create_at" time without time zone NOT NULL DEFAULT current_timestamp
+    "create_at" bigint,
+    "update_at" bigint
 )
 
 TABLESPACE pg_default;
@@ -146,4 +169,7 @@ ALTER TABLE public.videos
     OWNER to postgres;
     
 (?<=\")[A-Z][a-z]+(?=\" )
+
+insert into videos (title,url) select * from unnest(array['1','2'],array['a','b'])
+
 */
