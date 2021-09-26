@@ -5,7 +5,7 @@
 ## 创建数据库
 
 ```
-CREATE DATABASE postgres
+CREATE DATABASE psycho
     WITH 
     OWNER = postgres
     ENCODING = 'UTF8'
@@ -13,6 +13,8 @@ CREATE DATABASE postgres
     LC_CTYPE = 'Chinese (Simplified)_People''s Republic of China.936'
     TABLESPACE = pg_default
     CONNECTION LIMIT = -1;
+    
+    
 ```
 
 - https://www.postgresql.org/docs/current/locale.html

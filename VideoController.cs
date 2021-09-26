@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -9,8 +10,8 @@ namespace Psycho
     [EnableCors("MyPolicy")]
     public class VideoController : Controller
     {
-        private IDataService _dataService;
-        private CkClient _ckClient;
+        private readonly IDataService _dataService;
+        private readonly CkClient _ckClient;
 
         public VideoController(IDataService dataService, CkClient ckClient)
         {
@@ -19,9 +20,12 @@ namespace Psycho
         }
 
         [HttpGet]
-        public IActionResult Get(string controller)
+        public async Task<string> Get(string controller)
         {
-            return Ok();
+            var result = await _dataService.InsertVideo(new Video("1", "2", "3"));
+            Console.WriteLine(result);
+            var databases = await _dataService.ListAllDatabases();
+            return string.Join("\n", databases);
         }
 
         [HttpGet("ck")]

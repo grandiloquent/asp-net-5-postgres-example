@@ -22,23 +22,7 @@ namespace Psycho
         {
             var hp = new HttpRequestMessage(HttpMethod.Head, "/?u=http://52ck.cc/&p=/");
             var rs = await _client.SendAsync(hp);
-            if (rs.Headers.TryGetValues(HeaderNames.Location, out var values))
-            {
-                return values.FirstOrDefault();
-            }
-
-            Console.WriteLine(rs.StatusCode);
-            Console.WriteLine(await rs.Content.ReadAsStringAsync());
-            return _client.BaseAddress.ToString();
+            return rs.Headers.TryGetValues(HeaderNames.Location, out var values) ? values.FirstOrDefault() : null;
         }
     }
 }
-/*
-
-private CkClient _ckClient;
-
-public VideoController(CkClient ckClient)
-{
- _ckClient = ckClient;
-}
-*/
