@@ -14,7 +14,7 @@ namespace Psycho
 
         public DataService()
         {
-            var connString = "Host=localhost;Username=postgres;Password=995588;Database=psycho";
+            var connString = "";
             _connection = new NpgsqlConnection(connString);
         }
 
