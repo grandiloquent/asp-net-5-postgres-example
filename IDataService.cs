@@ -1,15 +1,16 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 namespace Psycho
 {
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+
     public interface IDataService
     {
-        Task<IEnumerable<string>> ListAllDatabases();
+        Task<int> DeleteVideo(int id);
         void InitializeDatabase();
         Task<int> InsertVideo(Video video);
-        Task<IEnumerable<Video>> QueryAllVideos();
-
         Task InsertVideosBatch(IEnumerable<Video> videos);
+        Task<IEnumerable<string>> ListAllDatabases();
+        Task<IEnumerable<Video>> QueryAllVideos();
+        Task<Video> QueryVideoByUrl(string url);
     }
 }

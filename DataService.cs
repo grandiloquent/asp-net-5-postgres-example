@@ -1,11 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Npgsql;
+using System.Data;
 
 namespace Psycho
 {
+    using Npgsql;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+
     public class DataService : IDataService
     {
         private readonly NpgsqlConnection _connection;
@@ -16,37 +18,91 @@ namespace Psycho
             _connection = new NpgsqlConnection(connString);
         }
 
-        public async Task<IEnumerable<Video>> QueryAllVideos()
+        private async Task<List<string>> GetAllDatabases()
         {
-            List<Video> videos = new();
+            const string listDatabases = "SELECT datname FROM pg_database WHERE datistemplate = false;";
+            NpgsqlCommand command =
+                new(listDatabases, _connection);
+            var npgsqlDataReader = await command.ExecuteReaderAsync();
+            var databases = new List<string>();
+            while (npgsqlDataReader.Read())
+            {
+                databases.Add(npgsqlDataReader.GetString(0));
+            }
+
+            return databases;
+        }
+
+        public async void InitializeDatabase()
+        {
+            await _connection.OpenAsync();
+            var databases = await GetAllDatabases();
+            if (!databases.Contains("psycho"))
+            {
+                NpgsqlCommand command =
+                    new(@"CREATE DATABASE psycho
+                WITH 
+                    OWNER = postgres
+                ENCODING = 'UTF8'
+                LC_COLLATE = 'Chinese (Simplified)_People''s Republic of China.936'
+                LC_CTYPE = 'Chinese (Simplified)_People''s Republic of China.936'
+                TABLESPACE = pg_default
+                CONNECTION LIMIT = -1;", _connection);
+                await command.ExecuteScalarAsync();
+            }
+
+            await _connection.CloseAsync();
+        }
+
+        public async Task<int> InsertVideo(Video video)
+        {
             await _connection.OpenAsync();
             await using NpgsqlCommand command =
-                new("Select id,title,url,thumbnail,publish_date,duration,update_at,create_at FROM videos", _connection);
+                new(
+                    "INSERT INTO videos (title,url,thumbnail,publish_date,duration,create_at,update_at) VALUES (@Title,@Url,@Thumbnail,@PublishDate,@Duration,@CreateAt,@UpdateAt) RETURNING id"
+                    , _connection);
+            command.Parameters.AddWithValue("@Title", video.Title);
+            command.Parameters.AddWithValue("@Url", video.Url);
+            command.Parameters.AddWithValue("@Thumbnail", video.Thumbnail);
+            command.Parameters.AddWithValue("@PublishDate", video.PublishDate ?? string.Empty);
+            command.Parameters.AddWithValue("@Duration", video.Duration);
+            var timestamp = DateTime.UtcNow.GetUnixTimeStamp();
+            command.Parameters.AddWithValue("@CreateAt", timestamp);
+            command.Parameters.AddWithValue("@UpdateAt", timestamp);
             await using var reader = await command.ExecuteReaderAsync();
-            while (reader.Read())
+            var result = 0;
+            if (reader.Read())
             {
-                var id = reader.GetInt32(0);
-                var title = reader.GetString(1);
-                var url = reader.GetString(2);
-                var thumbnail = reader.GetString(3);
-                var publishDate = reader.GetString(4);
-                var duration = reader.GetInt32(5);
-                var updateAt = reader.GetInt32(6);
-                var createAt = reader.GetInt32(7);
-                Video video = new(title, url, thumbnail)
-                {
-                    CreateAt = createAt,
-                    UpdateAt = updateAt,
-                    Duration = duration,
-                    PublishDate = publishDate,
-                    Id = id
-                };
-                videos.Add(video);
+                result = reader.GetInt32(0);
             }
 
             await _connection.CloseAsync();
 
-            return videos;
+            return result;
+        }
+
+        public async Task<Video> QueryVideoByUrl(string url)
+        {
+            await _connection.OpenAsync();
+            await using NpgsqlCommand command =
+                new(
+                    "SELECT id,title,thumbnail,publish_date,duration FROM videos WHERE url = @Url"
+                    , _connection);
+            command.Parameters.AddWithValue("@Url", url);
+            await using var reader = await command.ExecuteReaderAsync();
+            Video video = null;
+            while (reader.Read())
+            {
+                var id = reader.GetInt32(0);
+                var title = reader.GetString(1);
+                var thumbnail = reader.GetString(2);
+                var publishDate = await reader.IsDBNullAsync(3) ? string.Empty : reader.GetString(3);
+                var duration = reader.GetInt32(4);
+                video = new Video(title, url, thumbnail) {Duration = duration, PublishDate = publishDate, Id = id};
+            }
+
+            await _connection.CloseAsync();
+            return video;
         }
 
         public async Task InsertVideosBatch(IEnumerable<Video> videos)
@@ -71,59 +127,28 @@ namespace Psycho
             command.Parameters.AddWithValue("@Duration", enumerable.Select(i => i.Duration).ToArray());
             command.Parameters.AddWithValue("@UpdateAt", timestamps);
             command.Parameters.AddWithValue("@CreateAt", timestamps);
-
             await command.ExecuteNonQueryAsync();
-            
             await _connection.CloseAsync();
         }
 
-        public async Task<int> InsertVideo(Video video)
+        public async Task<int> DeleteVideo(int id)
         {
             await _connection.OpenAsync();
             await using NpgsqlCommand command =
                 new(
-                    "INSERT INTO videos (title,url,thumbnail,publish_date,duration,create_at,update_at) VALUES (@Title,@Url,@Thumbnail,@PublishDate,@Duration,@CreateAt,@UpdateAt)"
+                    "WITH d AS (DELETE FROM videos WHERE id = @Id RETURNING id) SELECT COUNT(*) FROM d"
                     , _connection);
-            command.Parameters.AddWithValue("@Title", video.Title);
-            command.Parameters.AddWithValue("@Url", video.Url);
-            command.Parameters.AddWithValue("@Thumbnail", video.Thumbnail);
-
-            command.Parameters.AddWithValue("@PublishDate", video.PublishDate ?? string.Empty);
-            command.Parameters.AddWithValue("@Duration", video.Duration);
-            var timestamp = DateTime.UtcNow.GetUnixTimeStamp();
-            command.Parameters.AddWithValue("@CreateAt", timestamp);
-            command.Parameters.AddWithValue("@UpdateAt", timestamp);
-
-            var result = await command.ExecuteScalarAsync();
-
-            await _connection.CloseAsync();
-            if (result != null)
+            command.Parameters.AddWithValue("@Id", id);
+            await using var reader = await command.ExecuteReaderAsync();
+            var result = 0;
+            if (reader.Read())
             {
-                return (int) result;
-            }
-
-            return 0;
-        }
-
-        public async void InitializeDatabase()
-        {
-            await _connection.OpenAsync();
-            var databases = await GetAllDatabases();
-            if (!databases.Contains("psycho"))
-            {
-                NpgsqlCommand command =
-                    new(@"CREATE DATABASE psycho
-                WITH 
-                    OWNER = postgres
-                ENCODING = 'UTF8'
-                LC_COLLATE = 'Chinese (Simplified)_People''s Republic of China.936'
-                LC_CTYPE = 'Chinese (Simplified)_People''s Republic of China.936'
-                TABLESPACE = pg_default
-                CONNECTION LIMIT = -1;", _connection);
-                await command.ExecuteScalarAsync();
+                result = reader.GetInt32(0);
             }
 
             await _connection.CloseAsync();
+
+            return result;
         }
 
         public async Task<IEnumerable<string>> ListAllDatabases()
@@ -134,42 +159,32 @@ namespace Psycho
             return databases;
         }
 
-        private async Task<List<string>> GetAllDatabases()
+        public async Task<IEnumerable<Video>> QueryAllVideos()
         {
-            const string listDatabases = "SELECT datname FROM pg_database WHERE datistemplate = false;";
-            NpgsqlCommand command =
-                new(listDatabases, _connection);
-            var npgsqlDataReader = await command.ExecuteReaderAsync();
-            var databases = new List<string>();
-            while (npgsqlDataReader.Read())
+            List<Video> videos = new();
+            await _connection.OpenAsync();
+            await using NpgsqlCommand command =
+                new("Select id,title,url,thumbnail,publish_date,duration,update_at,create_at FROM videos", _connection);
+            await using var reader = await command.ExecuteReaderAsync();
+            while (reader.Read())
             {
-                databases.Add(npgsqlDataReader.GetString(0));
+                var id = reader.GetInt32(0);
+                var title = await reader.IsDBNullAsync(1) ? string.Empty : reader.GetString(1);
+                var url = await reader.IsDBNullAsync(2) ? string.Empty : reader.GetString(2);
+                var thumbnail = await reader.IsDBNullAsync(3) ? string.Empty : reader.GetString(3);
+                var publishDate = await reader.IsDBNullAsync(4) ? string.Empty : reader.GetString(4);
+                var duration = reader.GetInt32(5);
+                Video video = new(title, url, thumbnail)
+                {
+                    Duration = duration,
+                    PublishDate = publishDate,
+                    Id = id
+                };
+                videos.Add(video);
             }
 
-            return databases;
+            await _connection.CloseAsync();
+            return videos;
         }
     }
 }
-/*
-CREATE TABLE IF NOT EXISTS public.videos
-(
-    "id" serial PRIMARY KEY,
-    "title" text,
-    "url" text,
-    "thumbnail" text,
-    "publish_date" text,
-    "duration" bigint,
-    "create_at" bigint,
-    "update_at" bigint
-)
-
-TABLESPACE pg_default;
-
-ALTER TABLE public.videos
-    OWNER to postgres;
-    
-(?<=\")[A-Z][a-z]+(?=\" )
-
-insert into videos (title,url) select * from unnest(array['1','2'],array['a','b'])
-
-*/

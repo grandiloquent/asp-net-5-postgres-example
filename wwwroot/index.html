@@ -1,13 +1,76 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>搜索视频</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no,">
+    <link rel="stylesheet" href="index.css">
 </head>
+
 <body>
-<form action="/api/video/upload" method="post" enctype="multipart/form-data">
-    <input type="file" name="file" multiple>
-    <input type="submit">
-</form>
+<style>
+    .pro_filter {
+        position: fixed;
+        min-height: 45px;
+        background-color: #fff;
+        display: flex;
+        top: 48px;
+        right: 0;
+        left: 0;
+
+    }
+
+    .pro_filter_items {
+        font-size: 14px;
+        display: flex;
+        position: relative;
+        padding: 10px 0;
+        height: 25px;
+        line-height: 25px;
+        text-align: center;
+        background: #fff;
+        z-index: 20;
+        width: 100%;
+    }
+
+    .pro_filter-item {
+        flex: 1;
+        padding: 0 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .pro_filter-item > span {
+        display: inline-block;
+        padding-right: 5px;
+    }
+
+    .icon_tri_up {
+        width: 8px;
+        height: 5px;
+        background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAKBAMAAABPkMOvAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAtUExURUdwTMzMzMzMzM3NzczMzKqqqsvLy8vLy9LS0szMzMzMzMzMzMvLy8zMzMzMzMOayfkAAAAOdFJOUwDs1Sb6A72VEWhCpUBBhNlJeQAAAEdJREFUCNdj2PIODLwZ9CCMRwyGEIYwA5cfiH6ygIFhHojxkoGBgR3EKAAyWPPevXsWAGQwNL17pwGiGZjlHhqAGQwXZYAEAGG7KjzTWTeMAAAAAElFTkSuQmCC) no-repeat;
+        background-size: 8px auto;
+    }
+</style>
+<div class="container" style="padding-top: 93px">
+
+</div>
+<div class="pro_filter">
+    <div class="pro_filter_items">
+        <a class="pro_filter-item">
+            <span>时长</span>
+            <div class="icon_tri_up">
+            </div>
+        </a>
+    </div>
+</div>
+<script src="shared.js"></script>
+<script src="header.js"></script>
+<script src="index.js"></script>
 </body>
+
 </html>
+
