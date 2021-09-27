@@ -65,7 +65,7 @@ namespace Psycho
             }
 
             var videos = await JsonSerializer.DeserializeAsync<List<Video>>(buffer);
-            await _dataService.InsertVideosBatch(videos);
+            await _dataService.InsertVideosBatch(videos.DistinctBy(v => v.Url));
             return Ok();
         }
     }

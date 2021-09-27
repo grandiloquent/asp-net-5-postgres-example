@@ -1,4 +1,5 @@
 using System.Data;
+using Microsoft.Extensions.Configuration;
 
 namespace Psycho
 {
@@ -12,10 +13,9 @@ namespace Psycho
     {
         private readonly NpgsqlConnection _connection;
 
-        public DataService()
+        public DataService(IConfiguration configuration)
         {
-            var connString = "";
-            _connection = new NpgsqlConnection(connString);
+            _connection = new NpgsqlConnection(configuration.GetConnectionString("DbConnectionString"));
         }
 
         private async Task<List<string>> GetAllDatabases()

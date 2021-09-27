@@ -1,0 +1,403 @@
+﻿using System.Text;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Linq;
+using System.IO;
+using Microsoft.CodeAnalysis;
+using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Threading;
+
+namespace Formatter
+{
+    // D:\cs\cscs Format.cs
+    class Program
+    {
+        static bool ProcessNamespace(SyntaxNode root, StringBuilder s)
+        {
+            var nodes = root.ChildNodes().OfType<NamespaceDeclarationSyntax>();
+            var syntaxes = nodes as NamespaceDeclarationSyntax[] ?? nodes.ToArray();
+            if (syntaxes.Any())
+            {
+                s.Append(syntaxes.First().NamespaceKeyword.Text).Append(' ').Append(syntaxes.First().Name)
+                    .Append('{');
+                ProcessUsing(syntaxes.First(), s);
+                ProcessStruct(syntaxes.First(), s);
+                ProcessEnum(syntaxes.First(), s);
+            }
+           
+            return true;
+        }
+
+        static void ProcessUsing(SyntaxNode root, StringBuilder s)
+        {
+            var nodes = root.ChildNodes().OfType<UsingDirectiveSyntax>();
+            var syntaxes = nodes as UsingDirectiveSyntax[] ?? nodes.OrderBy(i => i.Name.ToString()).ToArray();
+            if (!syntaxes.Any()) return;
+            foreach (var item in syntaxes)
+            {
+                s.Append(item.ToFullString());
+            }
+        }
+
+        static void ProcessStruct(SyntaxNode root, StringBuilder s)
+        {
+            var nodes = root.ChildNodes().OfType<StructDeclarationSyntax>();
+            var syntaxes = nodes as StructDeclarationSyntax[] ?? nodes.ToArray();
+            if (!syntaxes.Any()) return;
+            foreach (var item in syntaxes)
+            {
+                s.AppendLine(item.AttributeLists.ToFullString())
+                    .Append(item.Modifiers)
+                    .Append(' ')
+                    .Append(item.Keyword)
+                    .Append(' ')
+                    .Append(item.Identifier)
+                    .Append('{');
+
+                item.ChildNodes().OfType<FieldDeclarationSyntax>()
+                    .OrderBy(i=>i.Declaration.Variables.First().ToFullString())
+                    .ToList().ForEach(f =>
+                    {
+                        s
+                            .AppendLine(f.AttributeLists.ToFullString())
+                            .Append(f.Modifiers)
+                            .Append(' ')
+                            .Append(f.Declaration)
+                            .AppendLine(";");
+                    });
+
+                s.Append('}');
+            }
+        }
+
+        static void ProcessEnum(SyntaxNode root, StringBuilder s)
+        {
+            var nodes= root.ChildNodes().OfType<EnumDeclarationSyntax>();
+            var syntaxes = nodes as EnumDeclarationSyntax[] ?? nodes.OrderBy(i => i.Identifier.ToFullString()).ToArray();
+            if (syntaxes.Any())
+            {
+               
+                foreach (var itemEnum in nodes)
+                {
+                    s.Append(itemEnum.ToFullString());
+                }
+            }
+        }
+        
+        static void ProcessDelegate(SyntaxNode root, StringBuilder s)
+        {
+            var nodes= root.ChildNodes().OfType<DelegateDeclarationSyntax>();
+            var syntaxes = nodes as DelegateDeclarationSyntax[] ?? nodes.OrderBy(i => i.Identifier.ToFullString()).ToArray();
+            if (syntaxes.Any())
+            {
+               
+                foreach (var itemEnum in nodes)
+                {
+                    s.Append(itemEnum.ToFullString());
+                }
+            }
+        }
+        static void ProcessEvent(SyntaxNode root, StringBuilder s)
+        {
+            var nodes= root.ChildNodes().OfType<EventFieldDeclarationSyntax>();
+            var syntaxes = nodes as EventFieldDeclarationSyntax[] ?? nodes.OrderBy(i => i.Declaration.ToFullString()).ToArray();
+            if (syntaxes.Any())
+            {
+                Console.WriteLine("1111111111111111");
+
+                foreach (var itemEnum in nodes)
+                {
+                    s.Append(itemEnum.ToFullString());
+                }
+            }
+        }
+        private static string FormatCSharpCode(string value)
+        {
+            var s = new StringBuilder();
+
+            var rootNode = CSharpSyntaxTree.ParseText(value).GetRoot();
+            
+            ProcessUsing(rootNode, s);
+            ProcessNamespace(rootNode, s);
+
+
+
+            var interface_ = rootNode.DescendantNodes().OfType<InterfaceDeclarationSyntax>();
+
+            if (interface_.Any())
+            {
+                interface_ = interface_.OrderBy(i => i.Identifier.ValueText);
+
+
+                foreach (var item in interface_)
+                {
+                    s.Append(item.Modifiers.ToFullString()).Append(" interface ").Append(item.Identifier.ValueText);
+                    if (item.BaseList != null)
+                        s.Append(item.BaseList.GetText());
+
+                    s.Append('{');
+
+                    var field_ = item.ChildNodes().OfType<FieldDeclarationSyntax>();
+                    if (field_.Any())
+                    {
+                        field_ = field_.OrderBy(i => i.Declaration.Variables.First().ToFullString());
+
+                        foreach (var itemField in field_)
+                        {
+                            s.Append(itemField.ToFullString().Trim() + '\n');
+                        }
+                    }
+
+                    var property_ = item.ChildNodes().OfType<PropertyDeclarationSyntax>();
+                    if (property_.Any())
+                    {
+                        property_ = property_.OrderBy(i => i.Identifier.Value);
+
+                        foreach (var itemProperty in property_)
+                        {
+                            s.Append(itemProperty.ToFullString().Trim() + '\n');
+                        }
+                    }
+
+                    var method_ = item.ChildNodes().OfType<MethodDeclarationSyntax>();
+
+                    if (method_.Any())
+                    {
+                        method_ = method_.OrderByDescending(i => i.Modifiers.ToFullString().Contains("extern"))
+                            .ThenBy(i =>
+                                i.Identifier.ValueText
+                                    .Trim()); //.OrderBy(i => i.Identifier.ValueText).ThenBy(i=>i.Modifiers.ToFullString());
+
+                        //method_ = method_.OrderBy(i => i.Modifiers.ToFullString().Trim() + i.Identifier.ValueText.Trim());//.OrderBy(i => i.Identifier.ValueText).ThenBy(i=>i.Modifiers.ToFullString());
+                        foreach (var itemMethod in method_)
+                        {
+                            s.Append(itemMethod.ToFullString());
+                        }
+                    }
+                }
+
+                s.Append('}');
+            }
+
+            var class_ = rootNode.DescendantNodes().OfType<ClassDeclarationSyntax>();
+
+            if (class_.Any())
+            {
+                class_ = class_.OrderBy(i => i.Identifier.ValueText);
+
+                foreach (var item in class_)
+                {
+                  
+                    s.AppendLine(item.AttributeLists.ToFullString()).Append(item.Modifiers.ToFullString())
+                        .Append(" class ").Append(item.Identifier.ValueText);
+                    if (item.BaseList != null)
+                        s.Append(item.BaseList.GetText());
+
+                    s.Append('{');
+                    
+                    ProcessDelegate(item, s);
+                    ProcessEvent(item, s);
+
+                    var field_ = item.ChildNodes().OfType<FieldDeclarationSyntax>();
+                    if (field_.Any())
+                    {
+                        field_ = field_.OrderBy(i => i.Declaration.Variables.First().ToFullString());
+
+                        foreach (var itemField in field_)
+                        {
+                            s.Append(itemField.ToFullString().Trim() + '\n');
+                        }
+                    }
+
+                    var property_ = item.ChildNodes().OfType<PropertyDeclarationSyntax>();
+                    if (property_.Any())
+                    {
+                        property_ = property_.OrderBy(i => i.Identifier.ToString());
+
+                        foreach (var itemProperty in property_)
+                        {
+                            s.Append(itemProperty.ToFullString().Trim() + '\n');
+                        }
+                    }
+
+                    var enum_ = item.ChildNodes().OfType<EnumDeclarationSyntax>();
+                    if (enum_.Any())
+                    {
+                        enum_ = enum_.OrderBy(i => i.Identifier.ToFullString());
+
+                        foreach (var itemEnum in enum_)
+                        {
+                            s.Append(itemEnum.ToFullString());
+                        }
+                    }
+
+                   
+
+                    var struct_ = item.ChildNodes().OfType<StructDeclarationSyntax>();
+                    if (struct_.Any())
+                    {
+                        struct_ = struct_.OrderBy(i => i.Identifier.ToFullString());
+
+                        foreach (var itemStruct in struct_)
+                        {
+                            s.Append(itemStruct.ToFullString());
+                        }
+                    }
+
+                    var constructor_ = item.ChildNodes().OfType<ConstructorDeclarationSyntax>();
+                    if (constructor_.Any())
+                    {
+                        constructor_ =
+                            constructor_.OrderBy(i =>
+                                i.Identifier
+                                    .ValueText); //.OrderBy(i => i.Identifier.ValueText).ThenBy(i=>i.Modifiers.ToFullString());
+                        foreach (var itemMethod in constructor_)
+                        {
+                            s.Append(itemMethod.ToFullString());
+                        }
+                    }
+
+                    var method_ = item.ChildNodes().OfType<MethodDeclarationSyntax>();
+
+                    if (method_.Any())
+                    {
+                        method_ = method_.OrderByDescending(i => i.Modifiers.ToFullString().Contains("extern"))
+                            .ThenBy(i => i.Modifiers.First().ToString())
+                            .ThenBy(i =>
+                                i.Identifier.ValueText
+                                    .Trim()); //.OrderBy(i => i.Identifier.ValueText).ThenBy(i=>i.Modifiers.ToFullString());
+
+                        //method_ = method_.OrderBy(i => i.Modifiers.ToFullString().Trim() + i.Identifier.ValueText.Trim());//.OrderBy(i => i.Identifier.ValueText).ThenBy(i=>i.Modifiers.ToFullString());
+                        foreach (var itemMethod in method_)
+                        {
+                            s.Append(itemMethod.ToFullString());
+                        }
+                    }
+
+                    s.Append('}');
+                }
+            }
+
+            s.Append('}');
+
+
+            var record_ = rootNode.DescendantNodes().OfType<RecordDeclarationSyntax>();
+
+            if (record_.Any())
+            {
+                record_ = record_.OrderBy(i => i.Identifier.ValueText);
+
+                foreach (var item in record_)
+                {
+                    s.AppendLine(item.AttributeLists.ToFullString()).Append(item.Modifiers.ToFullString())
+                        .Append(" record ").Append(item.Identifier.ValueText);
+                    if (item.BaseList != null)
+                        s.Append(item.BaseList.GetText());
+
+                    s.Append('{');
+
+
+                    var field_ = item.ChildNodes().OfType<FieldDeclarationSyntax>();
+                    if (field_.Any())
+                    {
+                        field_ = field_.OrderBy(i => i.Declaration.Variables.First().ToFullString());
+
+                        foreach (var itemField in field_)
+                        {
+                            s.Append(itemField.ToFullString().Trim() + '\n');
+                        }
+                    }
+
+                    var property_ = item.ChildNodes().OfType<PropertyDeclarationSyntax>();
+                    if (property_.Any())
+                    {
+                        property_ = property_.OrderBy(i => i.Identifier.ToString());
+
+                        foreach (var itemProperty in property_)
+                        {
+                            s.Append(itemProperty.ToFullString().Trim() + '\n');
+                        }
+                    }
+
+                    var enum_ = item.ChildNodes().OfType<EnumDeclarationSyntax>();
+                    if (enum_.Any())
+                    {
+                        enum_ = enum_.OrderBy(i => i.Identifier.ToFullString());
+
+                        foreach (var itemEnum in enum_)
+                        {
+                            s.Append(itemEnum.ToFullString());
+                        }
+                    }
+
+                    var delegate_ = item.ChildNodes().OfType<DelegateDeclarationSyntax>();
+                    if (delegate_.Any())
+                    {
+                        delegate_ = delegate_.OrderBy(i => i.Identifier.ToFullString());
+
+                        foreach (var itemDelegate in delegate_)
+                        {
+                            s.Append(itemDelegate.ToFullString() + '\n');
+                        }
+                    }
+
+                    var struct_ = item.ChildNodes().OfType<StructDeclarationSyntax>();
+                    if (struct_.Any())
+                    {
+                        struct_ = struct_.OrderBy(i => i.Identifier.ToFullString());
+
+                        foreach (var itemStruct in struct_)
+                        {
+                            s.Append(itemStruct.ToFullString());
+                        }
+                    }
+
+                    var constructor_ = item.ChildNodes().OfType<ConstructorDeclarationSyntax>();
+                    if (constructor_.Any())
+                    {
+                        constructor_ =
+                            constructor_.OrderBy(i =>
+                                i.Identifier
+                                    .ValueText); //.OrderBy(i => i.Identifier.ValueText).ThenBy(i=>i.Modifiers.ToFullString());
+                        foreach (var itemMethod in constructor_)
+                        {
+                            s.Append(itemMethod.ToFullString());
+                        }
+                    }
+
+                    var method_ = item.ChildNodes().OfType<MethodDeclarationSyntax>();
+
+                    if (method_.Any())
+                    {
+                        method_ = method_.OrderByDescending(i => i.Modifiers.ToFullString().Contains("extern"))
+                            .ThenBy(i =>
+                                i.Identifier.ValueText
+                                    .Trim()); //.OrderBy(i => i.Identifier.ValueText).ThenBy(i=>i.Modifiers.ToFullString());
+
+                        //method_ = method_.OrderBy(i => i.Modifiers.ToFullString().Trim() + i.Identifier.ValueText.Trim());//.OrderBy(i => i.Identifier.ValueText).ThenBy(i=>i.Modifiers.ToFullString());
+                        foreach (var itemMethod in method_)
+                        {
+                            s.Append(itemMethod.ToFullString());
+                        }
+                    }
+
+                    s.Append('}');
+                }
+            }
+
+            return s.ToString();
+        }
+
+
+        static void Main(string[] args)
+        {
+            var content = File.ReadAllText(@"C:\Users\psycho\RiderProjects\Psycho\Server\Program.cs");
+            content = FormatCSharpCode(content);
+            File.WriteAllText("3.txt", content);
+            // dotnet publish -c Release -r win-x64 -p:PublishReadyToRun=true
+            // dotnet publish -r win-x64 --self-contained false
+        }
+    }
+}

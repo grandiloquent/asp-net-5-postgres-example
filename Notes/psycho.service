@@ -3,7 +3,7 @@ Description=Example .NET Web API App running on Ubuntu
 
 [Service]
 WorkingDirectory=/root/bin
-ExecStart=/root/bin/Euphoria
+ExecStart=/root/bin/Psycho
 Restart=always
 # Restart service after 10 seconds if the dotnet service crashes:
 RestartSec=10
