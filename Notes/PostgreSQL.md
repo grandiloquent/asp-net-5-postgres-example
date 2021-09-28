@@ -6,7 +6,7 @@
 2. `sudo dnf -qy module disable postgresql`
 3. `sudo dnf repolist`
 4. `sudo yum search postgresql13`
-5. `sudo dnf install postgresql13 postgresql13-server`
+5. `sudo dnf install postgresql13 postgresql13-server postgresql13-contrib`
 6. `sudo /usr/pgsql-13/bin/postgresql-13-setup initdb`
 7. `sudo ls /var/lib/pgsql/13/data/`
 8. `sudo systemctl enable --now postgresql-13`
@@ -77,6 +77,29 @@ dotnet add package Npgsql --version 6.0.0-rc.1
 git add . && git commit -m "更新" && git push
 ```
 
+```
+CREATE EXTENSION pg_trgm;
+
+create or replace function textsend_i (text) returns bytea as
+$$
+
+  select textsend($1);
+
+$$
+language sql strict immutable;
+
+CREATE INDEX trgm_idx_videos_title ON videos USING GIN(text(textsend_i(title)) gin_trgm_ops);
+
+SELECT title FROM videos WHERE text(textsend_i(title)) ~ ltrim(text(textsend_i('美女')), '\x') limit 20;
+
+select title from videos where title ~ ''
+
+ALTER TABLE users;
+ADD COLUMN chinese_name_bytea VARCHAR;
+UPDATE users SET chinese_name_bytes = textsend(chinese_name);
+CREATE INDEX trgm_idx_users_chinese_name_bytea ON users USING GIN(chinese_name_bytea gin_trgm_ops);
+
+```
 
 
 

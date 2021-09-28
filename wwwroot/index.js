@@ -1,11 +1,12 @@
 window.header.placeholder = "搜索";
-window.header.submit = (value) => {
+window.header.submit = async (value) => {
     window.header.hide();
-
+    const res = await fetch(`/api/video/query?keyword=${value}&factor=1`);
+    const items = await res.json();
     const videos = value === '*' ?
-        items.sort((x, y) => x.Duration - y.Duration)
-        : items.filter(i => fuzzysearch(value, i.Title))
-            .sort((x, y) => x.Duration - y.Duration);
+        items.sort((x, y) => x.duration - y.duration)
+        : items.filter(i => fuzzysearch(value, i.title))
+            .sort((x, y) => x.duration - y.duration);
 
     render(videos);
 }
@@ -73,16 +74,7 @@ function render(videos) {
 }
 
 const container = document.querySelector('.container');
-let items;
 
-fetch('/api/video')
-    .then(res => res.json())
-    .then(res => {
-        items = res
-            //.filter(x => x.Duration > 3600)
-            .sort((x, y) => x.Duration - y.Duration);
-        //render(items);
-    })
 
 fetch('/api/video/ck')
     .then(res => res.text())

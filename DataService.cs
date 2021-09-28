@@ -186,5 +186,39 @@ namespace Psycho
             await _connection.CloseAsync();
             return videos;
         }
+
+        public async Task<IEnumerable<Video>> QueryVideos(string keyword, int factor)
+        {
+            List<Video> videos = new();
+            await _connection.OpenAsync();
+            await using NpgsqlCommand command =
+                new(
+                    @"Select id,title,url,thumbnail,publish_date,duration,update_at,create_at FROM videos WHERE text(textsend_i(title)) ~ ltrim(text(textsend_i(@Keyword)), '\x') LIMIT @Limit OFFSET @Offset"
+                    , _connection);
+            command.Parameters.AddWithValue("@Keyword", keyword);
+            command.Parameters.AddWithValue("@Limit", 20);
+            command.Parameters.AddWithValue("@Offset", 20 * factor);
+
+            await using var reader = await command.ExecuteReaderAsync();
+            while (reader.Read())
+            {
+                var id = reader.GetInt32(0);
+                var title = await reader.IsDBNullAsync(1) ? string.Empty : reader.GetString(1);
+                var url = await reader.IsDBNullAsync(2) ? string.Empty : reader.GetString(2);
+                var thumbnail = await reader.IsDBNullAsync(3) ? string.Empty : reader.GetString(3);
+                var publishDate = await reader.IsDBNullAsync(4) ? string.Empty : reader.GetString(4);
+                var duration = reader.GetInt32(5);
+                Video video = new(title, url, thumbnail)
+                {
+                    Duration = duration,
+                    PublishDate = publishDate,
+                    Id = id
+                };
+                videos.Add(video);
+            }
+
+            await _connection.CloseAsync();
+            return videos;
+        }
     }
 }

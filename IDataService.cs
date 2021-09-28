@@ -12,5 +12,6 @@ namespace Psycho
         Task<IEnumerable<string>> ListAllDatabases();
         Task<IEnumerable<Video>> QueryAllVideos();
         Task<Video> QueryVideoByUrl(string url);
+        Task<IEnumerable<Video>> QueryVideos(string keyword, int factor);
     }
 }
