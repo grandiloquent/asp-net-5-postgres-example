@@ -73,11 +73,14 @@ fetch('/api/video/ck')
     });
 
 const spinner = document.querySelector('custom-spinner');
-
+const toast = document.querySelector('custom-toast');
 
 async function loadVideos(keyword, factor) {
     const res = await fetch(`/api/video/query?keyword=${keyword}&factor=${factor}`);
     const items = await res.json();
+    if (items.length < 20) {
+        stop();
+    }
     const videos = keyword === '*' ?
         items.sort((x, y) => x.duration - y.duration)
         : items.filter(i => fuzzysearch(keyword, i.title))
@@ -88,10 +91,22 @@ async function loadVideos(keyword, factor) {
 
 let keyword = '美女';
 let factor = 0;
+let stopped = false;
+
+function stop() {
+    stopped = true;
+    spinner.style.display = 'none';
+    toast.setAttribute('message', '已全部加载');
+}
 
 const observer = new IntersectionObserver(async callback => {
     if (callback[0].isIntersecting) {
-        await loadVideos(keyword, factor);
+        if (stopped) return;
+        try {
+            await loadVideos(keyword, factor);
+        } catch (e) {
+            stop();
+        }
         factor++;
     }
 });
@@ -99,8 +114,9 @@ observer.observe(spinner);
 
 window.header.submit = async (value) => {
     window.header.hide();
+    spinner.removeAttribute('style');
     keyword = value;
     factor = 0;
+    stopped = false;
     container.innerHTML = '';
-    await loadVideos(keyword, factor);
 }

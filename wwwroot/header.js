@@ -1,5 +1,4 @@
 ﻿(function () {
-
     class Header {
         constructor() {
             this.initializeTemplate();
@@ -11,7 +10,6 @@
             const topbarBackArrow = this.root.querySelector('.topbar-back-arrow');
             this.searchboxInput = this.root.querySelector('.searchbox-input');
             const searchboxForm = this.root.querySelector('.searchbox-form');
-
             if (searchboxForm) {
                 searchboxForm.addEventListener('submit', ev => {
                     ev.preventDefault();
@@ -19,31 +17,25 @@
                         this.submitCallabck(this.searchboxInput.value);
                 });
             }
-
             if (this.searchboxInput) {
                 this.searchboxInput.addEventListener('click', ev => {
-
                 });
             }
-
             if (topbarBackArrow) {
                 topbarBackArrow.addEventListener('click', ev => {
                     this.hide();
                 });
             }
-
             if (iconButton) {
                 iconButton.addEventListener('click', ev => {
                     this.show();
                 });
             }
-
             if (c3Overlay) {
                 c3Overlay.addEventListener('click', ev => {
                     this.hide();
                 });
             }
-
         }
 
         set placeholder(value) {
@@ -261,7 +253,6 @@ input
     outline: none;
 }
 </style>
-
     <div class="topbar-renderer in">
       <c3-overlay style="display: none">
         <button class="hidden-button" aria-label="关闭搜索功能">
@@ -321,8 +312,6 @@ input
             this.c3Overlay.style.display = 'block';
             this.topbarHeader.setAttribute('data-mode', 'searching');
         }
-
-
     }
 
     window.header = new Header();
