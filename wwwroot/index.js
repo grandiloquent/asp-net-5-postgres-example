@@ -6,7 +6,7 @@ function render(videos) {
     const results = [];
     for (let i = 0; i < videos.length; i++) {
         const video = videos[i];
-        const template = `<div class="large-media-item" data-href="${video.url}">
+        const template = `<div class="large-media-item" data-id="${video.id}" data-href="${video.url}">
         <a>
             <div class="video-thumbnail-container-large">
                 <div class="video-thumbnail-bg cover">
@@ -54,10 +54,15 @@ function render(videos) {
     largeMediaItems.forEach(largeMediaItem => {
         largeMediaItem.addEventListener('click', ev => {
             const href = largeMediaItem.getAttribute('data-href');
+            const id = largeMediaItem.getAttribute('data-id');
+            fetch(`/api/video/record?id=${id}`).then(res => res.text()).then(res => {
+                console.log(res);
+            })
             if (href.startsWith("http://") || href.startsWith("https://"))
                 window.location.href = href;
             else
                 window.location.href = baseUri + href;
+            
         });
     });
 
@@ -76,12 +81,15 @@ const spinner = document.querySelector('custom-spinner');
 const toast = document.querySelector('custom-toast');
 
 async function loadVideos(keyword, factor) {
-    const res = await fetch(`/api/video/query?keyword=${keyword}&factor=${factor}`);
+    const res = await fetch(
+        keyword ? `/api/video/query?keyword=${keyword}&factor=${factor}` :
+            `/api/video?count=40&factor=${factor}`);
     const items = await res.json();
+
     if (items.length < 20) {
         stop();
     }
-    const videos = keyword === '*' ?
+    const videos = keyword === '*' || !keyword ?
         items.sort((x, y) => x.duration - y.duration)
         : items.filter(i => fuzzysearch(keyword, i.title))
             .sort((x, y) => x.duration - y.duration);
@@ -89,7 +97,7 @@ async function loadVideos(keyword, factor) {
     render(videos);
 }
 
-let keyword = '美女';
+let keyword;
 let factor = 0;
 let stopped = false;
 
@@ -105,6 +113,7 @@ const observer = new IntersectionObserver(async callback => {
         try {
             await loadVideos(keyword, factor);
         } catch (e) {
+            console.log(e);
             stop();
         }
         factor++;

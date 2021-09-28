@@ -1,8 +1,6 @@
-using System.Data;
-using Microsoft.Extensions.Configuration;
-
 namespace Psycho
 {
+    using Microsoft.Extensions.Configuration;
     using Npgsql;
     using System;
     using System.Collections.Generic;
@@ -33,6 +31,48 @@ namespace Psycho
             return databases;
         }
 
+        private static async Task PerformRead(NpgsqlConnection connection, string cmdText,
+            Action<NpgsqlDataReader> action,
+            Action<NpgsqlCommand> cmd = null)
+        {
+            await connection.OpenAsync();
+            await using NpgsqlCommand command =
+                new(cmdText, connection);
+            cmd?.Invoke(command);
+            await using var reader = await command.ExecuteReaderAsync();
+            action(reader);
+            await connection.CloseAsync();
+        }
+
+        private static async Task Perform(NpgsqlConnection connection, string cmdText,
+            Action<NpgsqlCommand> cmd = null)
+        {
+            await connection.OpenAsync();
+            await using NpgsqlCommand command =
+                new(cmdText, connection);
+            cmd?.Invoke(command);
+            await command.ExecuteNonQueryAsync();
+            await connection.CloseAsync();
+        }
+
+        public async Task<int> DeleteVideo(int id)
+        {
+            var result = 0;
+            const string cmdText = "WITH d AS (DELETE FROM videos WHERE id = @Id RETURNING id) SELECT COUNT(*) FROM d";
+
+            await PerformRead(_connection,
+                cmdText, reader =>
+                {
+                    while (reader.Read())
+                    {
+                        result = reader.GetInt32(0);
+                    }
+                },
+                command => { command.Parameters.AddWithValue("@Id", id); }
+            );
+            return result;
+        }
+
         public async void InitializeDatabase()
         {
             await _connection.OpenAsync();
@@ -56,61 +96,38 @@ namespace Psycho
 
         public async Task<int> InsertVideo(Video video)
         {
-            await _connection.OpenAsync();
-            await using NpgsqlCommand command =
-                new(
-                    "INSERT INTO videos (title,url,thumbnail,publish_date,duration,create_at,update_at) VALUES (@Title,@Url,@Thumbnail,@PublishDate,@Duration,@CreateAt,@UpdateAt) RETURNING id"
-                    , _connection);
-            command.Parameters.AddWithValue("@Title", video.Title);
-            command.Parameters.AddWithValue("@Url", video.Url);
-            command.Parameters.AddWithValue("@Thumbnail", video.Thumbnail);
-            command.Parameters.AddWithValue("@PublishDate", video.PublishDate ?? string.Empty);
-            command.Parameters.AddWithValue("@Duration", video.Duration);
-            var timestamp = DateTime.UtcNow.GetUnixTimeStamp();
-            command.Parameters.AddWithValue("@CreateAt", timestamp);
-            command.Parameters.AddWithValue("@UpdateAt", timestamp);
-            await using var reader = await command.ExecuteReaderAsync();
             var result = 0;
-            if (reader.Read())
-            {
-                result = reader.GetInt32(0);
-            }
-
-            await _connection.CloseAsync();
-
+            const string cmdText =
+                "INSERT INTO videos (title,url,thumbnail,publish_date,duration,create_at,update_at) VALUES (@Title,@Url,@Thumbnail,@PublishDate,@Duration,@CreateAt,@UpdateAt) RETURNING id";
+            await PerformRead(_connection,
+                cmdText, reader =>
+                {
+                    while (reader.Read())
+                    {
+                        result = reader.GetInt32(0);
+                    }
+                },
+                command =>
+                {
+                    command.Parameters.AddWithValue("@Title", video.Title);
+                    command.Parameters.AddWithValue("@Url", video.Url);
+                    command.Parameters.AddWithValue("@Thumbnail", video.Thumbnail);
+                    command.Parameters.AddWithValue("@PublishDate", video.PublishDate ?? string.Empty);
+                    command.Parameters.AddWithValue("@Duration", video.Duration);
+                    var timestamp = DateTime.UtcNow.GetUnixTimeStamp();
+                    command.Parameters.AddWithValue("@CreateAt", timestamp);
+                    command.Parameters.AddWithValue("@UpdateAt", timestamp);
+                }
+            );
             return result;
         }
 
-        public async Task<Video> QueryVideoByUrl(string url)
+        public async Task InsertVideos(IEnumerable<Video> videos)
         {
             await _connection.OpenAsync();
             await using NpgsqlCommand command =
                 new(
-                    "SELECT id,title,thumbnail,publish_date,duration FROM videos WHERE url = @Url"
-                    , _connection);
-            command.Parameters.AddWithValue("@Url", url);
-            await using var reader = await command.ExecuteReaderAsync();
-            Video video = null;
-            while (reader.Read())
-            {
-                var id = reader.GetInt32(0);
-                var title = reader.GetString(1);
-                var thumbnail = reader.GetString(2);
-                var publishDate = await reader.IsDBNullAsync(3) ? string.Empty : reader.GetString(3);
-                var duration = reader.GetInt32(4);
-                video = new Video(title, url, thumbnail) {Duration = duration, PublishDate = publishDate, Id = id};
-            }
-
-            await _connection.CloseAsync();
-            return video;
-        }
-
-        public async Task InsertVideosBatch(IEnumerable<Video> videos)
-        {
-            await _connection.OpenAsync();
-            await using NpgsqlCommand command =
-                new(
-                    "INSERT INTO videos (title,url,thumbnail,publish_date,duration,update_at,create_at) SELECT * FROM UNNEST(@Title,@Url,@Thumbnail,@PublishDate,@Duration,@UpdateAt,@CreateAt)"
+                    "INSERT INTO videos (title,url,thumbnail,publish_date,duration,update_at,create_at) SELECT * FROM UNNEST(@Title,@Url,@Thumbnail,@PublishDate,@Duration,@UpdateAt,@CreateAt) ON CONFLICT (url) DO NOTHING"
                     , _connection);
             var enumerable = videos as Video[] ?? videos.ToArray();
             var timestamp = DateTime.UtcNow.GetUnixTimeStamp();
@@ -129,26 +146,6 @@ namespace Psycho
             command.Parameters.AddWithValue("@CreateAt", timestamps);
             await command.ExecuteNonQueryAsync();
             await _connection.CloseAsync();
-        }
-
-        public async Task<int> DeleteVideo(int id)
-        {
-            await _connection.OpenAsync();
-            await using NpgsqlCommand command =
-                new(
-                    "WITH d AS (DELETE FROM videos WHERE id = @Id RETURNING id) SELECT COUNT(*) FROM d"
-                    , _connection);
-            command.Parameters.AddWithValue("@Id", id);
-            await using var reader = await command.ExecuteReaderAsync();
-            var result = 0;
-            if (reader.Read())
-            {
-                result = reader.GetInt32(0);
-            }
-
-            await _connection.CloseAsync();
-
-            return result;
         }
 
         public async Task<IEnumerable<string>> ListAllDatabases()
@@ -187,37 +184,105 @@ namespace Psycho
             return videos;
         }
 
-        public async Task<IEnumerable<Video>> QueryVideos(string keyword, int factor)
+        public async Task<Video> QueryVideoByUrl(string url)
         {
-            List<Video> videos = new();
             await _connection.OpenAsync();
             await using NpgsqlCommand command =
                 new(
-                    @"Select id,title,url,thumbnail,publish_date,duration,update_at,create_at FROM videos WHERE text(textsend_i(title)) ~ ltrim(text(textsend_i(@Keyword)), '\x') LIMIT @Limit OFFSET @Offset"
+                    "SELECT id,title,thumbnail,publish_date,duration FROM videos WHERE url = @Url"
                     , _connection);
-            command.Parameters.AddWithValue("@Keyword", keyword);
-            command.Parameters.AddWithValue("@Limit", 20);
-            command.Parameters.AddWithValue("@Offset", 20 * factor);
-
+            command.Parameters.AddWithValue("@Url", url);
             await using var reader = await command.ExecuteReaderAsync();
+            Video video = null;
             while (reader.Read())
             {
                 var id = reader.GetInt32(0);
-                var title = await reader.IsDBNullAsync(1) ? string.Empty : reader.GetString(1);
-                var url = await reader.IsDBNullAsync(2) ? string.Empty : reader.GetString(2);
-                var thumbnail = await reader.IsDBNullAsync(3) ? string.Empty : reader.GetString(3);
-                var publishDate = await reader.IsDBNullAsync(4) ? string.Empty : reader.GetString(4);
-                var duration = reader.GetInt32(5);
-                Video video = new(title, url, thumbnail)
-                {
-                    Duration = duration,
-                    PublishDate = publishDate,
-                    Id = id
-                };
-                videos.Add(video);
+                var title = reader.GetString(1);
+                var thumbnail = reader.GetString(2);
+                var publishDate = await reader.IsDBNullAsync(3) ? string.Empty : reader.GetString(3);
+                var duration = reader.GetInt32(4);
+                video = new Video(title, url, thumbnail) {Duration = duration, PublishDate = publishDate, Id = id};
             }
 
             await _connection.CloseAsync();
+            return video;
+        }
+
+        public async Task<IEnumerable<Video>> QueryVideos(string keyword, int factor)
+        {
+            List<Video> videos = new();
+            await PerformRead(_connection,
+                @"Select id,title,url,thumbnail,publish_date,duration,update_at,create_at FROM videos WHERE text(textsend_i(title)) ~ ltrim(text(textsend_i(@Keyword)), '\x') LIMIT @Limit OFFSET @Offset",
+                async reader =>
+                {
+                    while (reader.Read())
+                    {
+                        var id = reader.GetInt32(0);
+                        var title = await reader.IsDBNullAsync(1) ? string.Empty : reader.GetString(1);
+                        var url = await reader.IsDBNullAsync(2) ? string.Empty : reader.GetString(2);
+                        var thumbnail = await reader.IsDBNullAsync(3) ? string.Empty : reader.GetString(3);
+                        var publishDate = await reader.IsDBNullAsync(4) ? string.Empty : reader.GetString(4);
+                        var duration = reader.GetInt32(5);
+                        Video video = new(title, url, thumbnail)
+                        {
+                            Duration = duration,
+                            PublishDate = publishDate,
+                            Id = id
+                        };
+                        videos.Add(video);
+                    }
+                },
+                command =>
+                {
+                    command.Parameters.AddWithValue("@Keyword", keyword);
+                    command.Parameters.AddWithValue("@Limit", 20);
+                    command.Parameters.AddWithValue("@Offset", 20 * factor);
+                }
+            );
+            return videos;
+        }
+
+        public async Task RecordViews(int id)
+        {
+            await Perform(_connection,
+                "UPDATE videos set views = coalesce(views,0) + 1,update_at = @UpdateAt WHERE id = @Id",
+                cmd =>
+                {
+                    cmd.Parameters.AddWithValue("@Id", id);
+                    cmd.Parameters.AddWithValue("@UpdateAt", DateTime.UtcNow.GetUnixTimeStamp());
+                });
+        }
+
+        public async Task<IEnumerable<Video>> GetVideos(int count = 20, int factor = 0)
+        {
+            List<Video> videos = new();
+            await PerformRead(_connection,
+                @"Select id,title,url,thumbnail,publish_date,duration,update_at,create_at FROM videos ORDER BY update_at DESC LIMIT @Limit OFFSET @Offset",
+                async reader =>
+                {
+                    while (reader.Read())
+                    {
+                        var id = reader.GetInt32(0);
+                        var title = await reader.IsDBNullAsync(1) ? string.Empty : reader.GetString(1);
+                        var url = await reader.IsDBNullAsync(2) ? string.Empty : reader.GetString(2);
+                        var thumbnail = await reader.IsDBNullAsync(3) ? string.Empty : reader.GetString(3);
+                        var publishDate = await reader.IsDBNullAsync(4) ? string.Empty : reader.GetString(4);
+                        var duration = reader.GetInt32(5);
+                        Video video = new(title, url, thumbnail)
+                        {
+                            Duration = duration,
+                            PublishDate = publishDate,
+                            Id = id
+                        };
+                        videos.Add(video);
+                    }
+                },
+                command =>
+                {
+                    command.Parameters.AddWithValue("@Limit", count);
+                    command.Parameters.AddWithValue("@Offset", count * factor);
+                }
+            );
             return videos;
         }
     }

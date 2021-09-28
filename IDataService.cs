@@ -6,12 +6,15 @@ namespace Psycho
     public interface IDataService
     {
         Task<int> DeleteVideo(int id);
+        Task<IEnumerable<Video>> GetVideos(int count, int factor);
         void InitializeDatabase();
         Task<int> InsertVideo(Video video);
-        Task InsertVideosBatch(IEnumerable<Video> videos);
+        Task InsertVideos(IEnumerable<Video> videos);
         Task<IEnumerable<string>> ListAllDatabases();
         Task<IEnumerable<Video>> QueryAllVideos();
         Task<Video> QueryVideoByUrl(string url);
         Task<IEnumerable<Video>> QueryVideos(string keyword, int factor);
+        
+        Task RecordViews(int id);
     }
 }

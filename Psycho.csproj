@@ -5,6 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="AngleSharp" Version="1.0.0-alpha-844" />
       <PackageReference Include="Npgsql" Version="6.0.0-rc.1" />
     </ItemGroup>
 

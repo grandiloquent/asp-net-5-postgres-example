@@ -25,17 +25,25 @@ namespace Psycho
             _ckClient = ckClient;
         }
 
+        [HttpGet] // 
+        public async Task<IEnumerable<Video>> FindRecentlyAddedVideos(int count, int factor, string controller)
+        {
+            var videos = await _dataService.GetVideos(count, factor);
+            return videos;
+        }
+
         [HttpGet("query")]
-        public async Task<IEnumerable<Video>> Get(string keyword, int factor,string controller)
+        public async Task<IEnumerable<Video>> Get(string keyword, int factor, string controller)
         {
             var videos = await _dataService.QueryVideos(keyword, factor);
             return videos;
         }
 
         [HttpGet("ck")]
-        public Task<string> GetCkBaseAddress(string controller)
+        public async Task<string> GetCkBaseAddress(string controller)
         {
-            return _ckClient.GetBaseAddress();
+            await _ckClient.GetVideos(1);
+            return await _ckClient.GetBaseAddress();
         }
 
         [HttpGet("url")]
@@ -65,7 +73,30 @@ namespace Psycho
             }
 
             var videos = await JsonSerializer.DeserializeAsync<List<Video>>(buffer);
-            await _dataService.InsertVideosBatch(videos.DistinctBy(v => v.Url));
+            await _dataService.InsertVideos(videos.DistinctBy(v => v.Url));
+            return Ok();
+        }
+
+        [HttpGet("57ck")]
+        public async Task<int> Fetch57CkVideos(int max = 1)
+        {
+            var videos = await _ckClient.GetVideos(max);
+            await _dataService.InsertVideos(videos);
+
+            return videos.Count;
+        }
+
+        [HttpPost]
+        public async Task<int> InsertVideos(List<Video> videos)
+        {
+            await _dataService.InsertVideos(videos);
+            return videos.Count;
+        }
+
+        [HttpGet("record")]
+        public async Task<OkResult> RecordViews(int id)
+        {
+            await _dataService.RecordViews(id);
             return Ok();
         }
     }
