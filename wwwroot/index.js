@@ -1,15 +1,5 @@
 window.header.placeholder = "搜索";
-window.header.submit = async (value) => {
-    window.header.hide();
-    const res = await fetch(`/api/video/query?keyword=${value}&factor=1`);
-    const items = await res.json();
-    const videos = value === '*' ?
-        items.sort((x, y) => x.duration - y.duration)
-        : items.filter(i => fuzzysearch(value, i.title))
-            .sort((x, y) => x.duration - y.duration);
 
-    render(videos);
-}
 let baseUri;
 
 function render(videos) {
@@ -58,7 +48,7 @@ function render(videos) {
     </div>`
         results.push(template);
     }
-    container.innerHTML = results.join('');
+    container.insertAdjacentHTML('beforeend', results.join(''));
     const largeMediaItems = document.querySelectorAll('.large-media-item');
 
     largeMediaItems.forEach(largeMediaItem => {
@@ -80,4 +70,37 @@ fetch('/api/video/ck')
     .then(res => res.text())
     .then(res => {
         baseUri = res;
-    })
+    });
+
+const spinner = document.querySelector('custom-spinner');
+
+
+async function loadVideos(keyword, factor) {
+    const res = await fetch(`/api/video/query?keyword=${keyword}&factor=${factor}`);
+    const items = await res.json();
+    const videos = keyword === '*' ?
+        items.sort((x, y) => x.duration - y.duration)
+        : items.filter(i => fuzzysearch(keyword, i.title))
+            .sort((x, y) => x.duration - y.duration);
+
+    render(videos);
+}
+
+let keyword = '美女';
+let factor = 0;
+
+const observer = new IntersectionObserver(async callback => {
+    if (callback[0].isIntersecting) {
+        await loadVideos(keyword, factor);
+        factor++;
+    }
+});
+observer.observe(spinner);
+
+window.header.submit = async (value) => {
+    window.header.hide();
+    keyword = value;
+    factor = 0;
+    container.innerHTML = '';
+    await loadVideos(keyword, factor);
+}
