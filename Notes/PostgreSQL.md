@@ -101,6 +101,13 @@ CREATE INDEX trgm_idx_users_chinese_name_bytea ON users USING GIN(chinese_name_b
 
 ```
 
+```
+CREATE INDEX videos_duration_idx
+    ON public.videos USING btree
+    (duration DESC NULLS LAST, id DESC NULLS LAST)
+;
+```
+
 
 
 

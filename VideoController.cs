@@ -25,10 +25,10 @@ namespace Psycho
             _ckClient = ckClient;
         }
 
-        [HttpGet] // 
-        public async Task<IEnumerable<Video>> FindRecentlyAddedVideos(int count, int factor, string controller)
+        [HttpGet]  
+        public async Task<IEnumerable<Video>> GetVideos(int count, int factor, Order order, string controller)
         {
-            var videos = await _dataService.GetVideos(count, factor);
+            var videos = await _dataService.GetVideos(count, factor,order);
             return videos;
         }
 

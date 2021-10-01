@@ -1,75 +1,61 @@
 ﻿{
-  "archive": "https://learning.oreilly.com/api/v1/book/9781800568105/",
-  "url": "https://learning.oreilly.com/api/v1/book/9781800568105/chapter/Text/Chapter_21.xhtml",
-  "web_url": "https://learning.oreilly.com/library/view/c-9-and/9781800568105/Text/Chapter_21.xhtml",
+  "archive": "https://learning.oreilly.com/api/v1/book/9781484273227/",
+  "url": "https://learning.oreilly.com/api/v1/book/9781484273227/chapter/html/Cover.xhtml",
+  "web_url": "https://learning.oreilly.com/library/view/simple-and-efficient/9781484273227/html/Cover.xhtml",
   "natural_key": [
-    "9781800568105",
-    "Text/Chapter_21.xhtml"
+    "9781484273227",
+    "html/Cover.xhtml"
   ],
-  "full_path": "Text/Chapter_21.xhtml",
-  "asset_base_url": "https://learning.oreilly.com/library/view/c-9-and/9781800568105/",
+  "full_path": "html/Cover.xhtml",
+  "asset_base_url": "https://learning.oreilly.com/library/view/simple-and-efficient/9781484273227/",
   "last_position": {
     "last_modified_time": "2021-09-26T18:19:10.912081Z"
   },
   "allow_scripts": false,
   "videoclip": null,
   "previous_chapter": {
-    "url": "https://learning.oreilly.com/api/v1/book/9781800568105/chapter/Text/Chapter_20.xhtml",
-    "web_url": "https://learning.oreilly.com/library/view/c-9-and/9781800568105/Text/Chapter_20.xhtml",
-    "title": "Building Web User Interfaces Using Blazor"
+    "url": "",
+    "web_url": "",
+    "title": ""
   },
   "next_chapter": {
-    "url": "https://learning.oreilly.com/api/v1/book/9781800568105/chapter/Text/Index.xhtml",
-    "web_url": "https://learning.oreilly.com/library/view/c-9-and/9781800568105/Text/Index.xhtml",
-    "title": "Index"
+    "url": "https://learning.oreilly.com/api/v1/book/9781484273227/chapter/html/513659_1_En_BookFrontmatter_OnlinePDF.xhtml",
+    "web_url": "https://learning.oreilly.com/library/view/simple-and-efficient/9781484273227/html/513659_1_En_BookFrontmatter_OnlinePDF.xhtml",
+    "title": "Front Matter"
   },
   "subjects": [],
   "authors": [
     {
-      "name": "Mark J. Price"
+      "name": "Vaskaran Sarcar"
     }
   ],
-  "cover": "https://learning.oreilly.com/library/cover/9781800568105/",
-  "book_title": "C# 9 and .NET 5 - Modern Cross-Platform Development - Fifth Edition",
-  "updated": "2021-05-11T18:11:33.265509Z",
+  "cover": "https://learning.oreilly.com/library/cover/9781484273227/",
+  "book_title": "Simple and Efficient Programming with C# : Skills to Build Applications with Visual Studio and .NET",
+  "updated": "2021-09-22T14:05:51.529860Z",
   "site_styles": [
     "https://learning.oreilly.com/static/CACHE/css/output.68851547a55f.css"
   ],
   "epub_properties": [],
-  "title": "Building Cross-Platform Mobile Apps",
-  "filename": "Chapter_21.xhtml",
-  "path": "Text",
-  "content": "https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781800568105/files/Text/Chapter_21.xhtml",
-  "minutes_required": 43.699999999999996,
+  "title": "Cover",
+  "filename": "Cover.xhtml",
+  "path": "html",
+  "content": "https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781484273227/files/html/Cover.xhtml",
+  "minutes_required": 1.15,
   "stylesheets": [
     {
-      "full_path": "Styles/epub.css",
-      "url": "https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781800568105/files/Styles/epub.css",
-      "original_url": "https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781800568105/files/Styles/epub.css"
-    },
-    {
-      "full_path": "Styles/syntax-highlighting.css",
-      "url": "https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781800568105/files/Styles/syntax-highlighting.css",
-      "original_url": "https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781800568105/files/Styles/syntax-highlighting.css"
+      "full_path": "css/springer_epub.css",
+      "url": "https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781484273227/files/css/springer_epub.css",
+      "original_url": "https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781484273227/files/css/springer_epub.css"
     }
   ],
   "images": [
-    "Images/B16689_21_01.png",
-    "Images/B16689_21_02.png",
-    "Images/B16689_21_03.png",
-    "Images/B16689_21_04.png",
-    "Images/B16689_21_05.png",
-    "Images/B16689_21_06.png",
-    "Images/B16689_21_07.png",
-    "Images/B16689_21_08.png",
-    "Images/B16689_21_09.png",
-    "Images/B16689_21_10.png"
+    "images/978-1-4842-7322-7_CoverFigure.jpg"
   ],
   "videoclips": [],
   "academic_excluded": false,
-  "created_time": "2020-11-18T13:25:43.783863Z",
-  "last_modified_time": "2020-11-18T13:27:09.891690Z",
-  "virtual_pages": 38,
+  "created_time": "2021-09-07T20:05:53.927281Z",
+  "last_modified_time": "2021-09-07T20:06:20.053290Z",
+  "virtual_pages": 1,
   "head_extra": null,
   "has_video": false,
   "description": "",

@@ -20,9 +20,9 @@ function render(videos) {
             </div>
         </a>
         <div class="details">
-            <div class="large-media-channel" style="display: none">
-                <div class="channel-thumbnail-icon">
-
+            <div class="large-media-channel">
+                <div class="channel-thumbnail-icon" style="font-size: 8px!important;display: flex;align-items: center;justify-content: center">
+                ${video.type === 0 ? '57' : '91'}
                 </div>
             </div>
             <div class="large-media-item-info">
@@ -62,7 +62,7 @@ function render(videos) {
                 window.location.href = href;
             else
                 window.location.href = baseUri + href;
-            
+
         });
     });
 
@@ -83,16 +83,15 @@ const toast = document.querySelector('custom-toast');
 async function loadVideos(keyword, factor) {
     const res = await fetch(
         keyword ? `/api/video/query?keyword=${keyword}&factor=${factor}` :
-            `/api/video?count=40&factor=${factor}`);
+            `/api/video?count=40&factor=${factor}&order=${order}`);
     const items = await res.json();
 
     if (items.length < 20) {
         stop();
     }
     const videos = keyword === '*' || !keyword ?
-        items.sort((x, y) => x.duration - y.duration)
-        : items.filter(i => fuzzysearch(keyword, i.title))
-            .sort((x, y) => x.duration - y.duration);
+        items
+        : items.filter(i => fuzzysearch(keyword, i.title));
 
     render(videos);
 }
@@ -100,6 +99,7 @@ async function loadVideos(keyword, factor) {
 let keyword;
 let factor = 0;
 let stopped = false;
+let order = 2;
 
 function stop() {
     stopped = true;
@@ -121,11 +121,36 @@ const observer = new IntersectionObserver(async callback => {
 });
 observer.observe(spinner);
 
+let keywords;
+if (window.localStorage) {
+    const keywordsString = window.localStorage.getItem("keywords");
+    keywords = keywordsString ? JSON.parse(keywordsString) : [];
+    if (keywords.length > 8)
+        keywords = keywords.slice(0, 8);
+    window.header.appendKeywords(keywords);
+}
+
+
 window.header.submit = async (value) => {
     window.header.hide();
     spinner.removeAttribute('style');
     keyword = value;
     factor = 0;
     stopped = false;
+    container.innerHTML = '';
+    if (keyword && keywords) {
+        if (keywords.length > 8)
+            keywords.pop();
+        keywords.unshift(value);
+        keywords = [...new Set(keywords)];
+        window.localStorage.setItem('keywords', JSON.stringify(keywords));
+        window.header.appendKeywords(keywords);
+    }
+}
+
+window.filter.callback = async (value) => {
+    factor = 0;
+    stopped = false;
+    order = value;
     container.innerHTML = '';
 }

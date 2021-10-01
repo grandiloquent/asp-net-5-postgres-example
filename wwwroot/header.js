@@ -36,6 +36,7 @@
                     this.hide();
                 });
             }
+            this.initializeDropdown();
         }
 
         set placeholder(value) {
@@ -44,6 +45,53 @@
 
         set submit(callback) {
             this.submitCallabck = callback;
+        }
+
+        initializeDropdown() {
+            const searchboxDropdown = this.root.querySelector('.searchbox-dropdown');
+
+            if (searchboxDropdown) {
+                searchboxDropdown.addEventListener('click', ev => {
+
+                });
+            }
+            this.searchboxDropdown = searchboxDropdown;
+            const sbsbC = searchboxDropdown.querySelector('.sbsb_c');
+            this.sbsbC = sbsbC;
+
+        }
+
+        appendKeywords(keywords) {
+            const results = [];
+            for (let i = 0; i < keywords.length; i++) {
+                const value = `<div class="sbmsq_b">
+                  <div class="sbsb_k">
+                    ${keywords[i]}
+                  </div>
+                  <div class="sbmsq_a">
+                  </div>
+                </div>`;
+
+                results.push(value);
+            }
+            this.sbsbC.innerHTML = results.join('');
+            const sbmsqAs = this.searchboxDropdown.querySelectorAll('.sbmsq_a');
+            if (sbmsqAs) {
+                sbmsqAs.forEach(sbmsqA => sbmsqA.addEventListener('click', ev => {
+                    this.searchboxInput.value = sbmsqA.previousSibling.previousSibling.textContent.trim();
+                }));
+            }
+            const sbsbKs = this.searchboxDropdown.querySelectorAll('.sbsb_k');
+
+            if (sbsbKs) {
+                sbsbKs.forEach(sbsbK => sbsbK.addEventListener('click', ev => {
+                    if (this.submitCallabck)
+                        this.submitCallabck(sbsbK.textContent.trim());
+                }));
+            }
+
+
+            this.searchboxDropdown.style.display = 'block';
         }
 
         initializeTemplate() {
@@ -252,7 +300,73 @@ input
     margin-top: 4px;
     outline: none;
 }
+.searchbox-dropdown
+{
+    position: absolute;
+    top: 48px;
+    left: 0;
+    right: 0;
+}
+.sbdd_b
+{
+    background-color: rgba(0,0,0,.102);
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    border-top-color: #d9d9d9;
+    -webkit-border-radius: 0 0 3px 3px;
+    cursor: default;
+    font-size: 1.4rem;
+    color: #030303;
+}
+.sbsb_c
+{
+    background-color: #f9f9f9;
+    padding: 0;
+}
+.sbmsq_b
+{
+    display: flex;
+    display: -webkit-flex;
+    display: flexbox;
+    display: box;
+    display: -webkit-box;
+    display: -moz-box;
+}
+.sbsb_k
+{
+    padding: 10px 3px 11px 8px;
+    flex-grow: 1;
+    -moz-box-ordinal-group: 1;
+    -ms-flex-order: 1;
+    -webkit-order: 1;
+    order: 1;
+    -webkit-box-ordinal-group: 1;
+    -webkit-box-flex: 1;
+    -webkit-user-select: none;
+    word-wrap: break-word;
+}
+.sbmsq_a
+{
+    background: #f3f3f3 url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAo0lEQVRIx+3X4QaAMBQF4L10RIwRMUZE9BB7t96gXOpfdVrtdMV+HMbY9+teOybGaDSyHxZC5gIX+BdwpTlOteYc15oLpGHB8/Y4BUew3FmAWxZMwe/CEgdwx4Kz4qmwpAV4y4Kz4E9hSQfwjgW/wt/CEg9wz4IlIRXPBSfjub+tPcADC76D9yxYMqDtxmwL49VKZVeV8Wymv+hJ09EiMVqlbQXTCZuExPleFwAAAABJRU5ErkJggg==) no-repeat center;
+    -webkit-background-size: 15px,15px;
+    user-select: none;
+    -webkit-user-select: none;
+    vertical-align: middle;
+    width: 37px;
+    flex: 0 0 37px;
+    -webkit-flex: 0 0 37px;
+    -moz-box-flex: 0;
+    -moz-box-ordinal-group: 2;
+    -webkit-order: 2;
+    -webkit-box-flex: 0;
+    -webkit-box-ordinal-group: 2;
+    z-index: 5000000;
+    background-color: #f1f1f1;
+}
 </style>
+
     <div class="topbar-renderer in">
       <c3-overlay style="display: none">
         <button class="hidden-button" aria-label="关闭搜索功能">
@@ -291,9 +405,17 @@ input
                 </svg></c3-icon>
             </button>
           </form>
+          <div class="searchbox-dropdown" style="display: none">
+            <div class="sbdd_b">
+              <div class="sbsb_c">
+                
+              </div>
+            </div>
+          </div>
         </div>
       </header>
     </div>
+  
     `;
             document.body.appendChild(template);
             const container = document.createElement('div');
