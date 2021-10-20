@@ -1,1 +1,0 @@
-# C:\Users\psycho\Desktop\CSharp\Psycho\Psycho\wwwroot\src\index.html

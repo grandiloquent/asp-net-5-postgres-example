@@ -1,37 +1,4 @@
-html {
-    color: #030303;
-    word-wrap: break-word;
-    background-color: #f9f9f9;
-    -webkit-text-size-adjust: 100%;
-    font-size: 10px;
-    font-family: Roboto, Arial, sans-serif;
-}
 
-body {
-    margin: 0;
-    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    font-size: 1.2rem;
-    overflow-x: hidden;
-}
-
-h1, h2, h3, h4 {
-    margin: 0 0 3px;
-}
-
-.subhead, h1, h2, h3, h4 {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    max-height: 2.5em;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
-    line-height: 1.25;
-    text-overflow: ellipsis;
-    font-weight: 400;
-}
-
-h3 {
-    font-size: 1.4rem;
-}
 
 .player {
     position: fixed;
@@ -478,35 +445,7 @@ c3-icon > svg {
 
 /**/
 
-@keyframes spinner {
-    0% {
-        -webkit-transform: rotate(0deg);
-        transform: rotate(0deg)
-    }
 
-    to {
-        -webkit-transform: rotate(1turn);
-        transform: rotate(1turn)
-    }
-}
-
-.spinner {
-    display: block;
-    box-sizing: border-box;
-    margin: 12px auto;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 2px solid #eee;
-    border-top-color: #666;
-    -webkit-animation: spinner .8s linear infinite;
-    animation: spinner .8s linear infinite
-}
-
-.spinner:not([hidden]) {
-    color: #333;
-    font-size: 1.6rem
-}
 
 /**/
 .ytm-item-section-renderer {

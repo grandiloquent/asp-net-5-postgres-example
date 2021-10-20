@@ -1,0 +1,33 @@
+/*
+<link rel="stylesheet" href="spinner.css">
+*/
+
+@keyframes spinner {
+    0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg)
+    }
+
+    to {
+        -webkit-transform: rotate(1turn);
+        transform: rotate(1turn)
+    }
+}
+
+.spinner {
+    display: block;
+    box-sizing: border-box;
+    margin: 12px auto;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #eee;
+    border-top-color: #666;
+    -webkit-animation: spinner .8s linear infinite;
+    animation: spinner .8s linear infinite
+}
+
+.spinner:not([hidden]) {
+    color: #333;
+    font-size: 1.6rem
+}
