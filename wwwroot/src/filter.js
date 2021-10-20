@@ -4,6 +4,10 @@
             this.handler = value;
         }
 
+        set regionCallback(value) {
+            this.regionHandler = value;
+        }
+
         constructor() {
             this.initializeTemplate();
             const proFilterMask = this.root.querySelector('.pro_filter_mask');
@@ -24,11 +28,15 @@
                 });
             }
             if (items) {
-                items.forEach(item => item.addEventListener('click', ev => {
+                items[0].addEventListener('click', ev => {
                     proFilterMask.style.display = 'block';
                     itemOptions.style.display = 'block';
                     ev.currentTarget.className = 'item selected';
-                }));
+                });
+                items[1].addEventListener('click', ev => {
+                    if (this.regionHandler)
+                        this.regionHandler();
+                });
             }
             const selections = itemOptions.querySelectorAll('.selection>div');
 
@@ -174,6 +182,11 @@ overflow: hidden;
           <i class="icon_tri_up">
             </i>
         </a>
+        <a class="item">
+          <div>
+            国内
+          </div>
+        </a>
       </div>
       <div class="item_options">
         <div class="selection">
@@ -183,8 +196,12 @@ overflow: hidden;
           <div data-order="4">
           时间最长
           </div>
+          <div data-order="5">
+         播放最多
+          </div>
         </div>
       </div>
+      
     </div>
   
     `;
@@ -206,4 +223,4 @@ overflow: hidden;
     }
 
     window.filter = new Filter();
-})()
+})();

@@ -58,7 +58,8 @@ namespace Psycho
         public async Task<int> DeleteVideo(int id)
         {
             var result = 0;
-            const string cmdText = "WITH d AS (DELETE FROM videos WHERE id = @Id RETURNING id) SELECT COUNT(*) FROM d";
+            const string cmdText = "update videos set hidden = @Hidden where id = @Id";
+            //"WITH d AS (DELETE FROM videos WHERE id = @Id RETURNING id) SELECT COUNT(*) FROM d";
 
             await PerformRead(_connection,
                 cmdText, reader =>
@@ -68,7 +69,11 @@ namespace Psycho
                         result = reader.GetInt32(0);
                     }
                 },
-                command => { command.Parameters.AddWithValue("@Id", id); }
+                command =>
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+                    command.Parameters.AddWithValue("@Hidden", true);
+                }
             );
             return result;
         }
@@ -127,7 +132,7 @@ namespace Psycho
             await _connection.OpenAsync();
             await using NpgsqlCommand command =
                 new(
-                    "INSERT INTO videos (title,url,thumbnail,publish_date,duration,update_at,create_at) SELECT * FROM UNNEST(@Title,@Url,@Thumbnail,@PublishDate,@Duration,@UpdateAt,@CreateAt) as r ON CONFLICT (url) DO UPDATE set duration = excluded.duration"
+                    "INSERT INTO videos (title,url,thumbnail,publish_date,duration,update_at,create_at,type) SELECT * FROM UNNEST(@Title,@Url,@Thumbnail,@PublishDate,@Duration,@UpdateAt,@CreateAt,@Type) as r ON CONFLICT (url) DO UPDATE set duration = excluded.duration"
                     , _connection);
             var enumerable = videos as Video[] ?? videos.ToArray();
             var timestamp = DateTime.UtcNow.GetUnixTimeStamp();
@@ -144,6 +149,8 @@ namespace Psycho
             command.Parameters.AddWithValue("@Duration", enumerable.Select(i => i.Duration).ToArray());
             command.Parameters.AddWithValue("@UpdateAt", timestamps);
             command.Parameters.AddWithValue("@CreateAt", timestamps);
+            command.Parameters.AddWithValue("@Type", enumerable.Select(i => i.Type).ToArray());
+
             await command.ExecuteNonQueryAsync();
             await _connection.CloseAsync();
         }
@@ -190,7 +197,7 @@ namespace Psycho
             await _connection.OpenAsync();
             await using NpgsqlCommand command =
                 new(
-                    "SELECT id,title,thumbnail,publish_date,duration,type FROM videos WHERE url = @Url LIMIT 1"
+                    "SELECT * FROM get_video(@Url)"
                     , _connection);
             command.Parameters.AddWithValue("@Url", url);
             await using var reader = await command.ExecuteReaderAsync();
@@ -203,7 +210,10 @@ namespace Psycho
                 var publishDate = await reader.IsDBNullAsync(3) ? string.Empty : reader.GetString(3);
                 var duration = reader.GetInt32(4);
                 video = new Video(title, url, thumbnail)
-                    {Duration = duration, PublishDate = publishDate, Id = id, Type = await reader.IsDBNullAsync(5) ? 0 : reader.GetInt32(5)};
+                {
+                    Duration = duration, PublishDate = publishDate, Id = id,
+                    Type = await reader.IsDBNullAsync(5) ? 0 : reader.GetInt32(5)
+                };
             }
 
             await _connection.CloseAsync();
@@ -214,7 +224,7 @@ namespace Psycho
         {
             List<Video> videos = new();
             await PerformRead(_connection,
-                @"Select id,title,url,thumbnail,publish_date,duration,type FROM videos WHERE text(textsend_i(title)) ~ ltrim(text(textsend_i(@Keyword)), '\x') ORDER BY update_at LIMIT @Limit OFFSET @Offset",
+                @"select * from get_videos(@Keyword,@Limit, @Offset)",
                 async reader =>
                 {
                     while (reader.Read())
@@ -245,6 +255,39 @@ namespace Psycho
             return videos;
         }
 
+        public async Task<IEnumerable<Video>> QueryRandomVideos()
+        {
+            List<Video> videos = new();
+            await PerformRead(_connection,
+                @"select * from get_random_videos()",
+                async reader =>
+                {
+                    while (reader.Read())
+                    {
+                        var id = reader.GetInt32(0);
+                        var title = await reader.IsDBNullAsync(1) ? string.Empty : reader.GetString(1);
+                        var url = await reader.IsDBNullAsync(2) ? string.Empty : reader.GetString(2);
+                        var thumbnail = await reader.IsDBNullAsync(3) ? string.Empty : reader.GetString(3);
+                        var publishDate = await reader.IsDBNullAsync(4) ? string.Empty : reader.GetString(4);
+                        var duration = reader.GetInt32(5);
+                        Video video = new(title, url, thumbnail)
+                        {
+                            Duration = duration,
+                            PublishDate = publishDate,
+                            Id = id,
+                            Type = await reader.IsDBNullAsync(6) ? 0 : reader.GetInt32(6)
+                        };
+                        videos.Add(video);
+                    }
+                },
+                command =>
+                {
+                   
+                }
+            );
+            return videos;
+        }
+
         public async Task RecordViews(int id)
         {
             await Perform(_connection,
@@ -256,7 +299,8 @@ namespace Psycho
                 });
         }
 
-        public async Task<IEnumerable<Video>> GetVideos(int count = 20, int factor = 0, Order order = Order.UpdateAt)
+        public async Task<IEnumerable<Video>> GetVideos(int count = 20, int factor = 0, Order order = Order.UpdateAt,
+            int type = 0)
         {
             List<Video> videos = new();
             string orderly;
@@ -269,12 +313,14 @@ namespace Psycho
                 case Order.UpdateAt:
                     orderly = "update_at";
                     break;
+                case Order.ViewMax:
+                    orderly = "views";
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(order), order, null);
             }
 
-            await PerformRead(_connection,
-                $"Select id,title,url,thumbnail,publish_date,duration,type FROM videos ORDER BY {orderly} DESC LIMIT @Limit OFFSET @Offset",
+            await PerformRead(_connection,$"SELECT * FROM get_videos('{orderly}',@Type,@Limit,@Offset)",
                 async reader =>
                 {
                     while (reader.Read())
@@ -299,6 +345,7 @@ namespace Psycho
                 {
                     command.Parameters.AddWithValue("@Limit", count);
                     command.Parameters.AddWithValue("@Offset", count * factor);
+                    command.Parameters.AddWithValue("@Type", type);
                 }
             );
             return videos;

@@ -193,4 +193,4 @@
     }
 
     window.dialog = new Dialog();
-})()
+})();

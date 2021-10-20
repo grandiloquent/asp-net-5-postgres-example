@@ -183,7 +183,8 @@ namespace Psycho
 
         public static long GetUnixTimeStamp(this DateTime dateTime)
         {
-            return ((dateTime.Ticks - 621355968000000000) / TimeSpan.TicksPerSecond);
+            // / TimeSpan.TicksPerSecond
+            return ((dateTime.Ticks - 621355968000000000));
         }
 
         public static string Md5String(string content)

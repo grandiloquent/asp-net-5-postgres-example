@@ -1,3 +1,5 @@
+
+
 namespace Psycho
 {
     using Microsoft.AspNetCore.Cors;
@@ -13,7 +15,6 @@ namespace Psycho
 
     [ApiController]
     [Route("/api/{controller}")]
-    [EnableCors("MyPolicy")]
     public class VideoController : Controller
     {
         private readonly CkClient _ckClient;
@@ -24,14 +25,21 @@ namespace Psycho
             _dataService = dataService;
             _ckClient = ckClient;
         }
-
-        [HttpGet]  
-        public async Task<IEnumerable<Video>> GetVideos(int count, int factor, Order order, string controller)
+        [HttpGet("random")]
+        [EnableCors("MyPolicy")]
+        public async Task<IEnumerable<Video>> GetRandomVideos()
         {
-            var videos = await _dataService.GetVideos(count, factor,order);
+            var videos = await _dataService.QueryRandomVideos();
             return videos;
         }
-
+        [HttpGet]
+        public async Task<IEnumerable<Video>> GetVideos(int count, int factor, Order order, int region,
+            string controller)
+        {
+            var videos = await _dataService.GetVideos(count, factor, order, region);
+            return videos;
+        }
+         
         [HttpGet("query")]
         public async Task<IEnumerable<Video>> Get(string keyword, int factor, string controller)
         {
@@ -78,6 +86,7 @@ namespace Psycho
         }
 
         [HttpGet("57ck")]
+        [EnableCors("MyPolicy")]
         public async Task<int> Fetch57CkVideos(int max = 1)
         {
             var videos = await _ckClient.GetVideos(max);
@@ -94,10 +103,38 @@ namespace Psycho
         }
 
         [HttpGet("record")]
+        
         public async Task<OkResult> RecordViews(int id)
         {
             await _dataService.RecordViews(id);
             return Ok();
         }
+
+        [HttpGet("apk")]
+        public string GetApk()
+        {
+            return "1.0.8";
+        }
+
+        [HttpGet("tencent")]
+        public string Tencent()
+        {
+            return
+                "login_remember=qq; vuserid=1428406875; main_login=wx; vusession=okAKUwwXvmja0YPoloctiw..; access_token=50_lxKKNEgXg4W8nYse305fyNZ8uiuUZgrnFwk8lXm9a4eKytAZVqLyXvC_44unTa3ULqrzbA0XjfxxDLBizJWvUw";
+        }
+
+        [HttpDelete]
+        public object DeleteVideo(int id)
+        {
+            if (!CookieHelper.Check("psycho", Request, true))
+            {
+                Response.StatusCode = 403;
+                return null;
+            }
+
+            return _dataService.DeleteVideo(id);
+        }
     }
+    
+    // 
 }

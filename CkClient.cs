@@ -87,7 +87,8 @@ namespace Psycho
                                 videoThumb)
                             {
                                 Duration = duration,
-                                PublishDate = datetime
+                                PublishDate = datetime,
+                                Type = 3
                             };
                             list.Add(videoItem);
                         }
