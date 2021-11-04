@@ -33,3 +33,14 @@ function formatDuration(ms) {
         .map(val => (val[1] + '').padStart(2, '0'))
         .join(':');
 }
+
+function writeText(message) {
+    const textarea = document.createElement("textarea");
+    textarea.style.position = 'fixed';
+    textarea.style.right = '100%';
+    document.body.appendChild(textarea);
+    textarea.value = message;
+    textarea.select();
+    document.execCommand('copy');
+    textarea.remove();
+}

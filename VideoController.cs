@@ -1,5 +1,3 @@
-
-
 namespace Psycho
 {
     using Microsoft.AspNetCore.Cors;
@@ -25,6 +23,7 @@ namespace Psycho
             _dataService = dataService;
             _ckClient = ckClient;
         }
+
         [HttpGet("random")]
         [EnableCors("MyPolicy")]
         public async Task<IEnumerable<Video>> GetRandomVideos()
@@ -32,6 +31,7 @@ namespace Psycho
             var videos = await _dataService.QueryRandomVideos();
             return videos;
         }
+
         [HttpGet]
         public async Task<IEnumerable<Video>> GetVideos(int count, int factor, Order order, int region,
             string controller)
@@ -39,11 +39,11 @@ namespace Psycho
             var videos = await _dataService.GetVideos(count, factor, order, region);
             return videos;
         }
-         
+
         [HttpGet("query")]
-        public async Task<IEnumerable<Video>> Get(string keyword, int factor, string controller)
+        public async Task<IEnumerable<Video>> Get(string keyword, int factor, int region, string controller)
         {
-            var videos = await _dataService.QueryVideos(keyword, factor);
+            var videos = await _dataService.QueryVideos(keyword, factor, region);
             return videos;
         }
 
@@ -55,7 +55,7 @@ namespace Psycho
         }
 
         [HttpGet("url")]
-        public async Task<Video> GetVideoByUrl(string url)
+        public async Task<Video> GetVideoByUrl([FromQuery] string url)
         {
             return await _dataService.QueryVideoByUrl(url);
         }
@@ -96,14 +96,30 @@ namespace Psycho
         }
 
         [HttpPost]
-        public async Task<int> InsertVideos(List<Video> videos)
+        public async Task<string> InsertVideos(List<Video> videos)
         {
+            if (videos.Count == 0)
+            {
+                return "不能插入空的视频集合";
+            }
+
             await _dataService.InsertVideos(videos);
-            return videos.Count;
+            return $"插入 {videos.Count} 个视频";
+        }
+
+        [HttpPost("update")]
+        public async Task<int> UpdateVideo([FromBody] Video video)
+        {
+            if (!CookieHelper.Check("psycho", Request, true))
+            {
+                Response.StatusCode = 403;
+                return -1;
+            }
+            await _dataService.UpdateVideo(video);
+            return 0;
         }
 
         [HttpGet("record")]
-        
         public async Task<OkResult> RecordViews(int id)
         {
             await _dataService.RecordViews(id);
@@ -113,7 +129,7 @@ namespace Psycho
         [HttpGet("apk")]
         public string GetApk()
         {
-            return "1.0.8";
+            return "1.1.2";
         }
 
         [HttpGet("tencent")]
@@ -135,6 +151,6 @@ namespace Psycho
             return _dataService.DeleteVideo(id);
         }
     }
-    
+
     // 
 }

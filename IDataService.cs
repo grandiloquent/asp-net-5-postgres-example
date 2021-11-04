@@ -7,7 +7,8 @@ namespace Psycho
     {
         UpdateAt = 1 << 1,
         DurationMax = 1 << 2,
-        ViewMax = 5
+        ViewMax = 5,
+        Create = 6
     }
 
     public interface IDataService
@@ -20,9 +21,10 @@ namespace Psycho
         Task<IEnumerable<string>> ListAllDatabases();
         Task<IEnumerable<Video>> QueryAllVideos();
         Task<Video> QueryVideoByUrl(string url);
-        Task<IEnumerable<Video>> QueryVideos(string keyword, int factor);
+        Task<IEnumerable<Video>> QueryVideos(string keyword, int factor, int type);
         Task<IEnumerable<Video>> QueryRandomVideos();
 
         Task RecordViews(int id);
+        Task UpdateVideo(Video video);
     }
 }

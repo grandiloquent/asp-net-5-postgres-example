@@ -1,14 +1,14 @@
 const ytpAutohide = document.querySelector('.ytp-autohide');
 ytpAutohide.addEventListener('click', ev => {
-    video.volume = 1;
+    video.removeAttribute('muted');
+    video.muted = false;
     ytpAutohide.style.display = 'none';
 })
 
 
-let playing = false;
 const player = document.querySelector('#player');
 player.addEventListener('click', ev => {
-    if (!playing) return;
+    if (video.paused) return;
     playerControlOverlay.style.display = 'block';
     playerControlOverlay.className = playerControlOverlay.className + ' fadein';
 
@@ -16,7 +16,6 @@ player.addEventListener('click', ev => {
         playerControlOverlay.style.display = 'none';
     }, 5000);
 })
-
 
 
 playerControlPlayPauseIcon.addEventListener('click', ev => {
@@ -51,72 +50,6 @@ iconButton.addEventListener('click', async ev => {
     }
 })
 
-
-video.addEventListener('abort', ev => {
-    console.log('abort');
-});
-
-video.addEventListener('canplay', ev => {
-    console.log('canplay');
-});
-
-video.addEventListener('canplaythrough', ev => {
-    console.log('canplaythrough');
-});
-
-
-video.addEventListener('emptied', ev => {
-    console.log('emptied');
-});
-
-
-
-
-video.addEventListener('loadeddata', ev => {
-    console.log('loadeddata');
-});
-
-video.addEventListener('loadedmetadata', ev => {
-    console.log('loadedmetadata');
-});
-
-video.addEventListener('loadstart', ev => {
-    console.log('loadstart');
-});
-
-video.addEventListener('pause', ev => {
-    console.log('pause');
-});
-
-
-
-
-
-video.addEventListener('ratechange', ev => {
-    console.log('ratechange');
-});
-
-video.addEventListener('seeked ', ev => {
-    console.log('seeked ');
-});
-
-video.addEventListener('seeking', ev => {
-    console.log('seeking');
-});
-
-video.addEventListener('stalled', ev => {
-    console.log('stalled');
-});
-
-video.addEventListener('suspend', ev => {
-    console.log('suspend');
-});
-
-
-
-video.addEventListener('volumechange', ev => {
-    console.log('volumechange');
-});
 
 
 

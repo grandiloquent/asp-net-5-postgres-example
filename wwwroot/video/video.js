@@ -21,28 +21,41 @@ function makeOverlay() {
     ytpCuedThumbnailOverlay.appendChild(ytpButton);
 }
 
-
 function start(obj) {
-    const videos = JSON.parse(obj).videos;
+    videos = JSON.parse(obj).videos;
     video.src = videos[0];
     video.play();
 }
+
+
+const actionDownload = document.querySelector('#action-download');
+actionDownload.addEventListener('click', ev => {
+    ev.stopPropagation();
+    window.JInterface.download(videos[0]);
+})
 
 const timeFirst = document.querySelector('.time-first');
 const timeSecond = document.querySelector('.time-second');
 const progressBarPlayed = document.querySelector('.progress-bar-played');
 const progressBarLoaded = document.querySelector('.progress-bar-loaded');
 const progressBarPlayheadWrapper = document.querySelector('.progress-bar-playhead-wrapper');
-const customToast = document.querySelector('.custom-toast');
+const customToast = document.querySelector('custom-toast');
 const ytmProgressBar = document.querySelector('.ytm-progress-bar');
 const playerControlOverlay = document.querySelector('.player-control-overlay');
 const spinner = document.querySelector('#spinner');
 const playerControlPlayPauseIcon = document.querySelector('.player-control-play-pause-icon');
+
+
+const playerControlsBottom = document.querySelector('.player-controls-bottom');
+playerControlsBottom.addEventListener('click', ev => {
+    ev.stopPropagation();
+})
+
+
 let timer = 0;
-let precent;
+let precent, videos, waiting = false;
 
 const video = document.querySelector('.html5-main-video');
-video.volume = 0;
 
 video.addEventListener('timeupdate', ev => {
     timeFirst.textContent = formatDuration(video.currentTime);
@@ -50,34 +63,65 @@ video.addEventListener('timeupdate', ev => {
     progressBarPlayed.style.width = percent;
     progressBarPlayheadWrapper.style.marginLeft = percent;
 });
+
+video.addEventListener('play', ev => {
+
+});
+video.addEventListener('waiting', ev => {
+    spinner.style.display = 'block';
+    playerControlPlayPauseIcon.style.display = 'none';
+    playerControlOverlay.style.display = 'block';
+    playerControlsBottom.setAttribute('hidden', '');
+    clearTimeout(timer);
+});
 video.addEventListener('progress', ev => {
     progressBarLoaded.style.width = calculateLoadedPercent(video);
+});
+video.addEventListener('durationchange', ev => {
+
+    if (video.duration > 0) {
+        timeSecond.textContent = formatDuration(video.duration);
+        playing = true;
+        spinner.style.display = 'none';
+        playerControlPlayPauseIcon.style.display = 'block';
+        // clearTimeout(timer);
+        // timer = setTimeout(() => {
+        //     playerControlOverlay.style.display = 'none';
+        // }, 5000);
+    }
+
+});
+video.addEventListener('loadedmetadata', ev => {
+
+});
+video.addEventListener('loadeddata', ev => {
+
+    timeSecond.textContent = formatDuration(video.duration);
 });
 video.addEventListener('error', ev => {
     customToast.setAttribute('message', '无法播放视频');
 });
-video.addEventListener('waiting', ev => {
-    console.log('waiting')
-    playing = false;
-    spinner.style.display = 'block';
-    playerControlPlayPauseIcon.style.display = 'none';
-    clearTimeout(timer);
-});
-video.addEventListener('play', ev => {
-    console.log('play');
-});
 video.addEventListener('playing', ev => {
-    playing = true;
+
+    playerControlsBottom.removeAttribute('hidden');
+    timeSecond.textContent = formatDuration(video.duration);
     spinner.style.display = 'none';
     playerControlPlayPauseIcon.style.display = 'block';
+    playerControlPlayPauseIcon.querySelector('svg')
+        .innerHTML = `<path d="M9,19H7V5H9ZM17,5H15V19h2Z"></path>`;
     clearTimeout(timer);
     timer = setTimeout(() => {
         playerControlOverlay.style.display = 'none';
     }, 5000);
 });
+video.addEventListener('canplaythrough', ev => {
+
+
+});
 video.addEventListener('ended', ev => {
     spinner.style.display = 'none';
     playerControlPlayPauseIcon.style.display = 'block';
+    playerControlsBottom.removeAttribute('hidden');
     clearTimeout(timer);
     playerControlOverlay.style.display = 'block';
     playerControlPlayPauseIcon.querySelector('svg')
@@ -86,10 +130,6 @@ video.addEventListener('ended', ev => {
                                     </g>`;
 });
 
-video.addEventListener('durationchange', ev => {
-    console.log('durationchange');
-    timeSecond.textContent = formatDuration(video.duration);
-});
 ytmProgressBar.addEventListener('touchstart', ev => {
     clearTimeout(timer);
     precent = touchMove(ytmProgressBar, ev);
@@ -130,13 +170,13 @@ ytmProgressBar.addEventListener('touchend', async ev => {
         try {
             await video.play();
         } catch (e) {
-            console.log(e);
+
             //this.dispatchEvent(new CustomEvent('error'));
         }
     }
-    
+
 });
-// video.src = 'https://video-hw.xvideos-cdn.com/videos/mp4/a/4/9/xvideos.com_a492a4d7f3f213f887e4eb7d061c6c84.mp4?e=1634759409&ri=1024&rs=85&h=5fc96c1fce9f8f85774b3717c7960359';
+// video.src = 'https://video-hw.xvideos-cdn.com/videos/3gp/0/3/0/xvideos.com_03080390bb5128a572423b0515af50f7.mp4?e=1634810689&ri=1024&rs=85&h=8ab029ca526b30fda0d1bedd29ca05f4';
 // video.play();
 // video.currentTime = durationToSeconds("12:20")
 
@@ -148,4 +188,91 @@ ytmProgressBar.addEventListener('click', event => {
     offsetXPercent = Math.max(0, offsetXPercent);
     offsetXPercent = Math.min(1, offsetXPercent);
     video.currentTime = video.duration * offsetXPercent;
-})
+});
+
+///
+video.addEventListener('abort', ev => {
+    console.log('abort', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('canplay', ev => {
+    console.log('canplay', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('canplaythrough', ev => {
+    console.log('canplaythrough', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('durationchange', ev => {
+    console.log('durationchange', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('emptied', ev => {
+    console.log('emptied', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('ended', ev => {
+    console.log('ended', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('error', ev => {
+    console.log('error', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('loadeddata', ev => {
+    console.log('loadeddata', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('loadedmetadata', ev => {
+    console.log('loadedmetadata', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('loadstart', ev => {
+    console.log('loadstart', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('pause', ev => {
+    console.log('pause', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('play', ev => {
+    console.log('play', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('playing', ev => {
+    console.log('playing', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('progress', ev => {
+    console.log('progress', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('ratechange', ev => {
+    console.log('ratechange', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('seeked ', ev => {
+    console.log('seeked ', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('seeking', ev => {
+    console.log('seeking', video.videoWidth, video.videoHeight, video.duration);
+    waiting = true;
+});
+
+video.addEventListener('stalled', ev => {
+    console.log('stalled', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('suspend', ev => {
+    console.log('suspend', video.videoWidth, video.videoHeight, video.duration);
+});
+
+
+video.addEventListener('volumechange', ev => {
+    console.log('volumechange', video.videoWidth, video.videoHeight, video.duration);
+});
+
+video.addEventListener('waiting', ev => {
+    console.log('waiting', video.videoWidth, video.videoHeight, video.duration);
+});

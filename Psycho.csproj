@@ -9,4 +9,12 @@
       <PackageReference Include="Npgsql" Version="6.0.0-rc.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\notes\notes.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\notes\notes.html" />
+      <_ContentIncludedByDefault Remove="wwwroot\notes\notes.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\notes\reset.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\notes\shared.js" />
+    </ItemGroup>
+
 </Project>

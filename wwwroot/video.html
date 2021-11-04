@@ -7,13 +7,39 @@
     
     
     
-<link rel="preload" as="style" href="video_v_cT6WQpwv4ykKI4DgXoJDIJW9LLqvG75Wrmb5EaDJjZg.css"><link rel="stylesheet" href="video_v_cT6WQpwv4ykKI4DgXoJDIJW9LLqvG75Wrmb5EaDJjZg.css"><link rel="preload" as="script" href="video_v_E7DXs435z7QMqkLiahx_Ma7EEjCP8Cd-acbGHghG0sQ.js"></head>
+    <style>
+        .slim-video-metadata-information-standalone-badge {
+            padding: 12px 12px 0;
+        }
+
+        .slim-video-metadata-header {
+            margin: 0 3px 3px;
+            width: 99%;
+            text-align: initial;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+
+        }
+
+        .slim-video-information-content {
+            display: flex;
+            padding: 0 9px 9px;
+        }
+
+        .slim-video-information-title-and-badges {
+            min-width: 0;
+            flex-grow: 1;
+
+        }
+
+        .slim-video-information-title {
+            -webkit-line-clamp: initial;
+            max-height: none;
+        }
+    </style>
+<link rel="preload" as="style" href="video_v_cT6WQpwv4ykKI4DgXoJDIJW9LLqvG75Wrmb5EaDJjZg.css"><link rel="stylesheet" href="video_v_cT6WQpwv4ykKI4DgXoJDIJW9LLqvG75Wrmb5EaDJjZg.css"><link rel="preload" as="script" href="video_v_MsywFMe5ZJ_Hua4mnLhwvmD_a_p1mNEp7q938V0JNaU.js"></head>
 <body>
 <div class="player">
     <div id="player">
-        <div class="center-wrapper">
-            <div class="spinner"></div>
-        </div>
         <div class="html5-video-player">
             <video class="html5-main-video" controlslist="nodownload" muted="">
             </video>
@@ -32,20 +58,22 @@
         </button>
 
         <div class="player-control-container">
-            <div class="player-control-overlay" style="display: none">
+            <div class="player-control-overlay">
                 <div class="player-controls-content">
                     <div class="player-controls-middle">
-                        <button class="player-control-play-pause-icon">
+                        <div class="spinner" id="spinner"></div>
+                        <button class="player-control-play-pause-icon" style="display: none">
                             <c3-icon>
                                 <svg xmlns="http://www.w3.org/2000/svg" height="24" viewbox="0 0 24 24" width="24">
-                                    <path d="M9,19H7V5H9ZM17,5H15V19h2Z"></path>
-
+                                    <g>
+                                        <path d="M6,4l12,8L6,20V4z"></path>
+                                    </g>
                                 </svg>
                             </c3-icon>
                         </button>
                     </div>
                 </div>
-                <div class="player-controls-bottom">
+                <div class="player-controls-bottom" hidden="">
                     <div class="ytm-time-display">
                         <div class="time-display-content">
 
@@ -101,12 +129,21 @@
 
 <div class="player-size">
 </div>
-<div style="height: 8.4px"></div>
+<div class="slim-video-metadata-information-standalone-badge">
+</div>
+<button class="slim-video-metadata-header">
+    <div class="slim-video-information-content">
+        <div class="slim-video-information-title-and-badges">
+            <h2 class="slim-video-information-title"></h2>
+        </div>
+    </div>
+</button>
+<div style="height: 8.4px;"></div>
 <div class="ytm-item-section-renderer">
     <div class="slim-video-action-bar-actions">
 
         <div class="slim-video-action-bar-action">
-            <button class="slim-video-action-bar-action-button">
+            <button class="slim-video-action-bar-action-button" id="action-download">
                 <div class="box">
                     <c3-icon class="button-renderer-icon">
                         <svg id="icon-file_download" viewbox="0 0 24 24">
@@ -132,10 +169,14 @@
     </div>
 </div>
 <custom-toast></custom-toast>
+<script>
+    const slimVideoInformationTitle = document.querySelector('.slim-video-information-title');
+    slimVideoInformationTitle.textContent = new URL(window.location).searchParams.get('t');
+</script>
 
 
 
 
 
-<script src="video_v_E7DXs435z7QMqkLiahx_Ma7EEjCP8Cd-acbGHghG0sQ.js"></script></body>
+<script src="video_v_MsywFMe5ZJ_Hua4mnLhwvmD_a_p1mNEp7q938V0JNaU.js"></script></body>
 </html>

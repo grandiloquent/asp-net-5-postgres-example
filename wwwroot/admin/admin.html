@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no,">
+    <link rel="stylesheet" href="reset.css">
+    <style>
+        .row {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .row label {
+            padding-right: 8px;
+        }
+
+        .row input {
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <label for="id">id</label>
+        <input type="number" name="id" id="id">
+    </div>
+    <div class="row">
+        <label for="title">title</label>
+        <input type="text" name="title" id="title">
+    </div>
+    <div class="row">
+        <label for="url">url</label>
+        <input type="text" name="url" id="url">
+    </div>
+    <div class="row">
+        <label for="thumbnail">thumbnail</label>
+        <input type="text" name="thumbnail" id="thumbnail">
+    </div>
+    <div class="row">
+        <label for="publish_date">publish_date</label>
+        <input type="text" name="publish_date" id="publish_date">
+    </div>
+    <div class="row">
+        <label for="duration">duration</label>
+        <input type="number" name="duration" id="duration">
+    </div>
+    <div class="row">
+        <label for="create_at">create_at</label>
+        <input type="number" name="create_at" id="create_at">
+    </div>
+    <div class="row">
+        <label for="update_at">update_at</label>
+        <input type="number" name="update_at" id="update_at">
+    </div>
+    <div class="row">
+        <label for="views">views</label>
+        <input type="number" name="views" id="views">
+    </div>
+    <div class="row">
+        <label for="type">type</label>
+        <input type="number" name="type" id="type">
+    </div>
+    <div class="row">
+        <label for="hidden">隐藏</label>
+        <input type="checkbox" name="url" id="hidden">
+    </div>
+    <div class="row">
+        <button id="submit" style="height: 32px;width: 100%">确定</button>
+    </div>
+</div>
+<script src="index.js"></script>
+</body>
+</html>

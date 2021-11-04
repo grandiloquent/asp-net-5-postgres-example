@@ -111,6 +111,9 @@ a
            <a class="menu-item-button" id="action-delete">
          删除
           </a>
+           <a class="menu-item-button" id="action-download">
+         下载
+          </a>
         </ytm-menu-item>
       </div>
       <c3-overlay>
@@ -151,6 +154,15 @@ a
                     if (this.callback)
                         this.callback(2, id);
                 });
+            const downloadItemButton = this.root.querySelector('#action-download');
+            downloadItemButton
+                .addEventListener('click', ev => {
+                    const href = this.element.getAttribute('data-href');
+                    menuContainer.style.display = 'none';
+                    if (this.callback)
+                        this.callback(3, href);
+                });
+
         }
 
         hide() {

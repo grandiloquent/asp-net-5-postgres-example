@@ -2,28 +2,32 @@ const contextRenderer = document.querySelector('.context-renderer');
 
 async function applyVideos() {
     async function getRandomVideos() {
-        const response = await fetch("http://47.106.105.122/api/video/random");
+        const response = await fetch("/api/video/random");
         if (!response.ok) throw new Error(response.statusText);
         return await response.json();
     }
 
+    function loadMoreVideos() {
+        (new IntersectionObserver(async entries => {
+            if (entries[0].isIntersecting) {
+                await loadVideos();
+            }
+        })).observe(document.querySelector('.spinner'));
+    }
 
-    new IntersectionObserver(entries => {
+
+    const imageObserver = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting) {
             entries[0].target.src = entries[0].target.dataset.src;
+            imageObserver.unobserve(entries[0].target);
         }
     });
 
     async function loadVideos() {
-        const imageObserver = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting) {
-                entries[0].target.src = entries[0].target.dataset.src;
-                imageObserver.observe(entries[0].target);
-            }
-        });
+
 
         async function getBaseUri() {
-            const response = await fetch("http://47.106.105.122/api/video/ck");
+            const response = await fetch("/api/video/ck");
             if (!response.ok) throw new Error(response.statusText);
             return await response.text();
         }
@@ -105,11 +109,20 @@ async function applyVideos() {
             ytmLargeMediaItem.appendChild(details);
 
             ytmLargeMediaItem.addEventListener('click', ev => {
+                slimVideoInformationTitle.textContent = v.title;
                 const href = ytmLargeMediaItem.getAttribute('data-href');
                 const id = ytmLargeMediaItem.getAttribute('data-id');
-                fetch(`http://47.106.105.122/api/video/record?id=${id}`).then(res => res.text()).then(res => {
+                fetch(`/api/video/record?id=${id}`).then(res => res.text()).then(res => {
                     console.log(res);
-                })
+                });
+
+                video.pause();
+                video.currentTime = 0;
+                progressBarPlayed.style.width = '0';
+                progressBarLoaded.style.width = '0';
+                progressBarPlayheadWrapper.style.marginLeft = '0';
+
+
                 if (href.startsWith("http://") || href.startsWith("https://"))
                     window.JInterface.parse(href);
                 else
@@ -121,6 +134,7 @@ async function applyVideos() {
         contextRenderer.appendChild(documentFragment);
     }
 
+    loadMoreVideos();
     await loadVideos();
 }
 

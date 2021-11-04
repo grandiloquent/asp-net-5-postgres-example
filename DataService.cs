@@ -204,15 +204,26 @@ namespace Psycho
             Video video = null;
             if (reader.Read())
             {
-                var id = reader.GetInt32(0);
-                var title = reader.GetString(1);
-                var thumbnail = reader.GetString(2);
-                var publishDate = await reader.IsDBNullAsync(3) ? string.Empty : reader.GetString(3);
-                var duration = reader.GetInt32(4);
+                var id = await reader.IsDBNullAsync(0) ? 0 : reader.GetInt32(0);
+                var title = await reader.IsDBNullAsync(1) ? string.Empty : reader.GetString(1);
+                var thumbnail = await reader.IsDBNullAsync(3) ? string.Empty : reader.GetString(3);
+                var publishDate = await reader.IsDBNullAsync(4) ? string.Empty : reader.GetString(4);
+                var duration = await reader.IsDBNullAsync(5) ? 0 : reader.GetInt32(5);
+                var createAt = await reader.IsDBNullAsync(6) ? 0 : reader.GetInt64(6);
+                var updateAt = await reader.IsDBNullAsync(7) ? 0 : reader.GetInt64(7);
+                var views = await reader.IsDBNullAsync(8) ? 0 : reader.GetInt32(8);
+                var type = await reader.IsDBNullAsync(9) ? 0 : reader.GetInt32(9);
+                var hidden = !await reader.IsDBNullAsync(10) && reader.GetBoolean(10);
                 video = new Video(title, url, thumbnail)
                 {
-                    Duration = duration, PublishDate = publishDate, Id = id,
-                    Type = await reader.IsDBNullAsync(5) ? 0 : reader.GetInt32(5)
+                    Id = id,
+                    PublishDate = publishDate,
+                    Duration = duration,
+                    CreateAt = createAt,
+                    UpdateAt = updateAt,
+                    Views = views,
+                    Type = type,
+                    Hidden = hidden,
                 };
             }
 
@@ -220,11 +231,11 @@ namespace Psycho
             return video;
         }
 
-        public async Task<IEnumerable<Video>> QueryVideos(string keyword, int factor)
+        public async Task<IEnumerable<Video>> QueryVideos(string keyword, int factor, int type)
         {
             List<Video> videos = new();
             await PerformRead(_connection,
-                @"select * from get_videos(@Keyword,@Limit, @Offset)",
+                @"select * from query_videos(@Keyword,@Type,@Limit, @Offset)",
                 async reader =>
                 {
                     while (reader.Read())
@@ -248,6 +259,7 @@ namespace Psycho
                 command =>
                 {
                     command.Parameters.AddWithValue("@Keyword", keyword);
+                    command.Parameters.AddWithValue("@Type", type);
                     command.Parameters.AddWithValue("@Limit", 20);
                     command.Parameters.AddWithValue("@Offset", 20 * factor);
                 }
@@ -280,10 +292,7 @@ namespace Psycho
                         videos.Add(video);
                     }
                 },
-                command =>
-                {
-                   
-                }
+                command => { }
             );
             return videos;
         }
@@ -296,6 +305,26 @@ namespace Psycho
                 {
                     cmd.Parameters.AddWithValue("@Id", id);
                     cmd.Parameters.AddWithValue("@UpdateAt", DateTime.UtcNow.GetUnixTimeStamp());
+                });
+        }
+
+        public async Task UpdateVideo(Video video)
+        {
+            await Perform(_connection,
+                "UPDATE videos set title = @Title, url = @Url, thumbnail = @Thumbnail, publish_date = @PublishDate, duration = @Duration, create_at = @CreateAt, update_at = @UpdateAt, views = @Views, type = @Type, hidden = @Hidden WHERE id = @Id",
+                cmd =>
+                {
+                    cmd.Parameters.AddWithValue("@Id", video.Id);
+                    cmd.Parameters.AddWithValue("@Title", video.Title);
+                    cmd.Parameters.AddWithValue("@Url", video.Url);
+                    cmd.Parameters.AddWithValue("@Thumbnail", video.Thumbnail);
+                    cmd.Parameters.AddWithValue("@PublishDate", video.PublishDate);
+                    cmd.Parameters.AddWithValue("@Duration", video.Duration);
+                    cmd.Parameters.AddWithValue("@CreateAt", video.CreateAt);
+                    cmd.Parameters.AddWithValue("@UpdateAt", DateTime.UtcNow.GetUnixTimeStamp());
+                    cmd.Parameters.AddWithValue("@Views", video.Views);
+                    cmd.Parameters.AddWithValue("@Type", video.Type);
+                    cmd.Parameters.AddWithValue("@Hidden", video.Hidden);
                 });
         }
 
@@ -316,11 +345,14 @@ namespace Psycho
                 case Order.ViewMax:
                     orderly = "views";
                     break;
+                case Order.Create:
+                    orderly = "create_at";
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(order), order, null);
             }
 
-            await PerformRead(_connection,$"SELECT * FROM get_videos('{orderly}',@Type,@Limit,@Offset)",
+            await PerformRead(_connection, $"SELECT * FROM get_videos('{orderly}',@Type,@Limit,@Offset)",
                 async reader =>
                 {
                     while (reader.Read())
