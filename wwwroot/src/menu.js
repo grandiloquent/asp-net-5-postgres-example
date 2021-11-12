@@ -160,7 +160,7 @@ a
                     const href = this.element.getAttribute('data-href');
                     menuContainer.style.display = 'none';
                     if (this.callback)
-                        this.callback(3, href);
+                        this.callback(3, href, this.element);
                 });
 
         }

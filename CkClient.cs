@@ -32,14 +32,14 @@ namespace Psycho
             return rs.Headers.TryGetValues(HeaderNames.Location, out var values) ? values.FirstOrDefault() : null;
         }
 
-        public async Task<List<Video>> GetVideos(int max)
+        public async Task<List<Video>> GetVideos(int max, int type = 2)
         {
             var baseUrl = await GetBaseAddress();
             const int maxConcurrency = 2;
             var messages = new List<string>();
             for (int i = 0; i < max; i++)
             {
-                messages.Add($"{baseUrl}vodtype/2-{i + 1}.html");
+                messages.Add($"{baseUrl}vodtype/{type}-{i + 1}.html");
             }
 
             using var concurrencySemaphore = new SemaphoreSlim(maxConcurrency);
@@ -79,6 +79,7 @@ namespace Psycho
                             }
                             catch (Exception e)
                             {
+                                // ignored
                             }
 
                             Video videoItem = new(

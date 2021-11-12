@@ -58,7 +58,8 @@ namespace Psycho
         public async Task<int> DeleteVideo(int id)
         {
             var result = 0;
-            const string cmdText = "update videos set hidden = @Hidden where id = @Id";
+            const string cmdText =
+                "update videos set hidden = NOT(COALESCE(hidden, FALSE)) ,update_at = @UpdateAt where id = @Id";
             //"WITH d AS (DELETE FROM videos WHERE id = @Id RETURNING id) SELECT COUNT(*) FROM d";
 
             await PerformRead(_connection,
@@ -72,7 +73,7 @@ namespace Psycho
                 command =>
                 {
                     command.Parameters.AddWithValue("@Id", id);
-                    command.Parameters.AddWithValue("@Hidden", true);
+                    command.Parameters.AddWithValue("@UpdateAt", DateTime.UtcNow.GetUnixTimeStamp());
                 }
             );
             return result;
@@ -231,6 +232,7 @@ namespace Psycho
             return video;
         }
 
+        // Use keywords to fuzzy query the video through word segmentation
         public async Task<IEnumerable<Video>> QueryVideos(string keyword, int factor, int type)
         {
             List<Video> videos = new();

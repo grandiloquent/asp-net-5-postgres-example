@@ -20,18 +20,23 @@ function makeOverlay() {
     ytpButton.appendChild(svg);
     ytpCuedThumbnailOverlay.appendChild(ytpButton);
 }
-
+function decodeHtml(html) {
+    var txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
+}
 function start(obj) {
-    videos = JSON.parse(obj).videos;
+    const json = JSON.parse(obj);
+    videos = json.videos;
+    slimVideoInformationTitle.textContent = decodeHtml(json.title);
     video.src = videos[0];
     video.play();
 }
 
-
 const actionDownload = document.querySelector('#action-download');
 actionDownload.addEventListener('click', ev => {
     ev.stopPropagation();
-    window.JInterface.download(videos[0]);
+    window.JInterface.download(videos[0],slimVideoInformationTitle.textContent);
 })
 
 const timeFirst = document.querySelector('.time-first');

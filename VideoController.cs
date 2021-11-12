@@ -87,9 +87,9 @@ namespace Psycho
 
         [HttpGet("57ck")]
         [EnableCors("MyPolicy")]
-        public async Task<int> Fetch57CkVideos(int max = 1)
+        public async Task<int> Fetch57CkVideos(int max = 1, int type = 2)
         {
-            var videos = await _ckClient.GetVideos(max);
+            var videos = await _ckClient.GetVideos(max, type);
             await _dataService.InsertVideos(videos);
 
             return videos.Count;
@@ -115,6 +115,7 @@ namespace Psycho
                 Response.StatusCode = 403;
                 return -1;
             }
+
             await _dataService.UpdateVideo(video);
             return 0;
         }
@@ -129,7 +130,7 @@ namespace Psycho
         [HttpGet("apk")]
         public string GetApk()
         {
-            return "1.1.2";
+            return "1.1.3";
         }
 
         [HttpGet("tencent")]
@@ -151,6 +152,4 @@ namespace Psycho
             return _dataService.DeleteVideo(id);
         }
     }
-
-    // 
 }
