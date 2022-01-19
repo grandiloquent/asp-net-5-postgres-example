@@ -3,52 +3,104 @@ async function getBaseAddress() {
     return response.text();
 }
 
-/**/
-let isMobile = false;
-const mobile = new URL(window.location).searchParams.get('platform');
-if (mobile === 'mobile') {
-    isMobile = true;
+function hmsToSecondsOnly(str) {
+    var p = str.split(':'),
+        s = 0, m = 1;
+
+    while (p.length > 0) {
+        s += m * parseInt(p.pop(), 10);
+        m *= 60;
+    }
+
+    return s;
 }
+
 /**/
 let baseUri;
-if (!isMobile) {
-    fetch('/api/video/ck')
-        .then(res => res.text())
-        .then(res => {
-            baseUri = res;
-        });
-}
+const toast = document.querySelector('custom-toast');
 
-// Set video options menu
-window.menu.attach(document.querySelector('.menu'));
-window.menu.eventHandler = async (what, href, element) => {
-    if (what === 1) {
-        if (href.startsWith("http://") || href.startsWith("https://"))
-            writeText(href);
-        else
-            writeText(baseUri + href);
-    } else if (what === 2) {
-        {
-            try {
-                const response = await fetch(`/api/video?id=${href}`, {
-                    method: 'DELETE'
-                });
-                toast.setAttribute('message', 'Success.');
-            } catch (e) {
+function initializeMenu() {
+    window.menu.attach(document.querySelector('.menu'));
+    window.menu.eventHandler = async (what, href, element) => {
+        if (what === 1) { //复制链接到剪切板
+            if (href.startsWith("http://") || href.startsWith("https://"))
+                writeText(href);
+            else
+                // http://57ck.cc/ 频繁更换域名，需要通过接口获取当前域名
+                writeText(baseUri + href);
+        } else if (what === 2) {
+            // 删除无效的视频，可能的原因是该视频已被源网站移除
+            // 譬如91porn某些视频往往一天之内便失效
+            // 该功能需要管理员登录获取认证Cookie
+            {
+                try {
+                    const response = await fetch(`/api/video?id=${href}`, {
+                        method: 'DELETE'
+                    });
+                    toast.setAttribute('message', 'Success.');
+                } catch (e) {
+
+                }
 
             }
-
+            // 调用 Android Java 代码下载视频
+        } else if (what === 3) {
+                if (href.startsWith("http://") || href.startsWith("https://"))
+                    window.JInterface.download(href, element.querySelector('h3').textContent);
+                else
+                    window.JInterface.download(baseUri + href, element.querySelector('h3').textContent);
+            }else if (what === 5) {
+                writeText(href.querySelector('h3').textContent);
+            }
         }
-    } else if (what === 3) {
-        {
-            console.log(element.querySelector('h3').textContent);
-            if (href.startsWith("http://") || href.startsWith("https://"))
-                window.JInterface.download(href, element.querySelector('h3').textContent);
-            else
-                window.JInterface.download(baseUri + href, element.querySelector('h3').textContent);
-        }
-    }
 }
+
+function onItemClick(largeMediaItem) {
+    largeMediaItem.addEventListener('click', async ev => {
+        const href = largeMediaItem.getAttribute('data-href');
+        const id = largeMediaItem.getAttribute('data-id');
+        //await fetch(`/api/video/record?id=${id}`)
+        if (window.JInterface) {
+            if (href.startsWith("http://") || href.startsWith("https://"))
+                window.JInterface.handleRequest(href,id);
+            else
+                window.JInterface.handleRequest(baseUri + href,id);
+        }
+        /*else {
+            if (href.startsWith("https://www.xvideos.com/") )
+                window.location.href = `/video.html?q=${encodeURIComponent(new URL(href).pathname)}&t=${encodeURIComponent(largeMediaItem.querySelector('h3').textContent)}&id=${id}`;
+            else
+                window.location.href = `/video.html?q=${encodeURIComponent(href)}&t=${encodeURIComponent(largeMediaItem.querySelector('h3').textContent)}&id=${id}`;
+        }
+*/
+
+    });
+}
+
+function onContextItem(largeMediaItemMenu) {
+    largeMediaItemMenu.addEventListener('click', ev => {
+        ev.stopPropagation();
+        let parent = ev.currentTarget;
+        while (parent && parent.className !== 'large-media-item') {
+            parent = parent.parentNode;
+        }
+        window.menu.show(parent);
+    });
+}
+
+/**/
+
+async function initialize() {
+    baseUri = await getBaseAddress();
+    initializeMenu();
+}
+
+initialize().then(r => {
+
+}).catch(res => {
+    toast.setAttribute('message', '无法加载页面');
+});
+
 
 // Set video options menu
 
@@ -132,32 +184,9 @@ function makeItem(video) {
     details.appendChild(largeMediaItemInfo);
     largeMediaItem.appendChild(details);
 
-    largeMediaItem.addEventListener('click', ev => {
-        const href = largeMediaItem.getAttribute('data-href');
-        const id = largeMediaItem.getAttribute('data-id');
-        fetch(`/api/video/record?id=${id}`).then(res => res.text()).then(res => {
-            console.log(res);
-        })
-        if (!isMobile) {
-            if (href.startsWith("http://") || href.startsWith("https://"))
-                window.JInterface.handleRequest(href);
-            else
-                window.JInterface.handleRequest(baseUri + href);
-        } else {
-            if (href.startsWith("http://") || href.startsWith("https://"))
-                window.location.href = `/video.html?q=${decodeURIComponent(href)}&t=${encodeURIComponent(video.title)}`;
-            else
-                window.location.href = `/video.html?q=${decodeURIComponent(href)}&t=${encodeURIComponent(video.title)}`;
-        }
-    });
-    largeMediaItemMenu.addEventListener('click', ev => {
-        ev.stopPropagation();
-        let parent = ev.currentTarget;
-        while (parent && parent.className !== 'large-media-item') {
-            parent = parent.parentNode;
-        }
-        window.menu.show(parent);
-    });
+    onItemClick(largeMediaItem);
+
+    onContextItem(largeMediaItemMenu);
 
     return largeMediaItem;
 }
@@ -168,9 +197,11 @@ const container = document.querySelector('.container');
 const spinner = document.querySelector('.spinner');
 window.spinner.inject(spinner);
 
-const toast = document.querySelector('custom-toast');
 
 async function loadVideos(keyword, factor) {
+    if (/\d+:\d+/.test(keyword)) {
+        keyword = "tj:" + hmsToSecondsOnly(keyword);
+    }
     const res = await fetch(
         keyword ? `/api/video/query?keyword=${keyword}&factor=${factor}&region=${region}` :
             `/api/video?count=40&factor=${factor}&order=${order}&region=${region}`);
@@ -179,7 +210,7 @@ async function loadVideos(keyword, factor) {
     if (items.length < 20) {
         stop();
     }
-    const videos = keyword === '*' || keyword === '91' || keyword === '1' || !keyword ?
+    const videos = keyword === '*' || keyword === '91' || keyword === '-91'|| keyword === '51'|| keyword === '1' || !keyword || keyword.startsWith("tj:") ?
         items
         : items.filter(i => fuzzysearch(keyword, i.title));
 

@@ -20,12 +20,17 @@ function makeOverlay() {
     ytpButton.appendChild(svg);
     ytpCuedThumbnailOverlay.appendChild(ytpButton);
 }
+
 function decodeHtml(html) {
     var txt = document.createElement("textarea");
     txt.innerHTML = html;
     return txt.value;
 }
-function start(obj) {
+
+let _id;
+
+async function start(obj, id) {
+    _id = id;
     const json = JSON.parse(obj);
     videos = json.videos;
     slimVideoInformationTitle.textContent = decodeHtml(json.title);
@@ -36,7 +41,7 @@ function start(obj) {
 const actionDownload = document.querySelector('#action-download');
 actionDownload.addEventListener('click', ev => {
     ev.stopPropagation();
-    window.JInterface.download(videos[0],slimVideoInformationTitle.textContent);
+    window.JInterface.download(videos[1], slimVideoInformationTitle.textContent);
 })
 
 const timeFirst = document.querySelector('.time-first');
@@ -89,6 +94,10 @@ video.addEventListener('durationchange', ev => {
         playing = true;
         spinner.style.display = 'none';
         playerControlPlayPauseIcon.style.display = 'block';
+
+        fetch(`http://47.106.105.122/api/video/record?id=${_id}&duration=${video.duration | 0}`).then(res => res.text()).then(res => {
+            console.log(res);
+        });
         // clearTimeout(timer);
         // timer = setTimeout(() => {
         //     playerControlOverlay.style.display = 'none';
@@ -195,6 +204,43 @@ ytmProgressBar.addEventListener('click', event => {
     video.currentTime = video.duration * offsetXPercent;
 });
 
+function touchStart() {
+
+    const container = document.querySelector('.player-control-overlay');
+    const middle = document.querySelector('.player-controls-middle');
+    const label = document.createElement('div');
+    middle.appendChild(label);
+    let start = 0;
+    let offset = 0;
+    container.addEventListener('touchstart', ev => {
+        offset = video.currentTime;
+        start = ev.touches[0].clientX;
+        clearTimeout(timer);
+        label.style.display = 'block';
+        playerControlPlayPauseIcon.style.display = 'none';
+
+    });
+    container.addEventListener('touchmove', ev => {
+        if (start > ev.touches[0].clientX) {
+            offset--;
+        } else {
+            offset++;
+        }
+        label.textContent = formatDuration(offset);
+    });
+    container.addEventListener('touchend', ev => {
+        video.currentTime = offset;
+        label.style.display = 'none';
+        start = 0;
+        offset = 0;
+        timer = setTimeout(() => {
+            playerControlOverlay.style.display = 'none';
+        }, 5000);
+    });
+}
+
+//touchStart();
+
 ///
 video.addEventListener('abort', ev => {
     console.log('abort', video.videoWidth, video.videoHeight, video.duration);
@@ -281,3 +327,4 @@ video.addEventListener('volumechange', ev => {
 video.addEventListener('waiting', ev => {
     console.log('waiting', video.videoWidth, video.videoHeight, video.duration);
 });
+start();

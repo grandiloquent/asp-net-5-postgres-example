@@ -1,3 +1,6 @@
+using System.Reflection;
+using System.Text.RegularExpressions;
+
 namespace Psycho
 {
     using System;
@@ -253,5 +256,264 @@ namespace Psycho
                 charsets[charsetIndex][0],
                 charsets[charsetIndex][1]);
         }
+        public static object CallStaticMethod(Type t, string name, object?[]? parameters)
+        {
+            var m = t.GetMethod(name, BindingFlags.Public | BindingFlags.Static);
+
+            return m != null ? m.Invoke(null, parameters) : string.Empty;
+        }
+          private static string Base64UrlEncode(byte[] input)
+        {
+            return Base64UrlEncode(input, offset: 0, count: input.Length);
+        }
+
+        private static string Base64UrlEncode(byte[] input, int offset, int count)
+        {
+            // Special-case empty input
+            if (count == 0)
+            {
+                return string.Empty;
+            }
+
+            var buffer = new char[GetArraySizeRequiredToEncode(count)];
+            var numBase64Chars = Base64UrlEncode(input, offset, buffer, outputOffset: 0, count: count);
+
+            return new String(buffer, startIndex: 0, length: numBase64Chars);
+        }
+        private static int GetArraySizeRequiredToEncode(int count)
+        {
+            var numWholeOrPartialInputBlocks = checked(count + 2) / 3;
+            return checked(numWholeOrPartialInputBlocks * 4);
+        }
+        private static int Base64UrlEncode(byte[] input, int offset, char[] output, int outputOffset, int count)
+        {
+            var arraySizeRequired = GetArraySizeRequiredToEncode(count);
+
+
+            // Special-case empty input.
+            if (count == 0)
+            {
+                return 0;
+            }
+
+            // Use base64url encoding with no padding characters. See RFC 4648, Sec. 5.
+
+            // Start with default Base64 encoding.
+            var numBase64Chars = Convert.ToBase64CharArray(input, offset, count, output, outputOffset);
+
+            // Fix up '+' -> '-' and '/' -> '_'. Drop padding characters.
+            for (var i = outputOffset; i - outputOffset < numBase64Chars; i++)
+            {
+                var ch = output[i];
+                if (ch == '+')
+                {
+                    output[i] = '-';
+                }
+                else if (ch == '/')
+                {
+                    output[i] = '_';
+                }
+                else if (ch == '=')
+                {
+                    // We've reached a padding character; truncate the remainder.
+                    return i - outputOffset;
+                }
+            }
+
+            return numBase64Chars;
+        }
+
+        public static string GetHashForString(this string str)
+        {
+            // https://github.com/aspnet/Mvc/blob/master/src/Microsoft.AspNetCore.Mvc.Razor/Infrastructure/DefaultFileVersionProvider.cs
+            using (var sha256 = SHA256.Create())
+            {
+                var hash = sha256.ComputeHash(new UTF8Encoding(false).GetBytes(str));
+                return Base64UrlEncode(hash);
+            }
+        }
+        public static string SubstringAfterLast(this string s, string delimiter, string missingDelimiterValue = null)
+        {
+            var index = s.LastIndexOf(delimiter, StringComparison.Ordinal);
+            if (index == -1) return missingDelimiterValue ?? s;
+            var pieces = s.AsSpan();
+            return pieces[(index + delimiter.Length)..].ToString();
+        }
+         public static List<Tuple<int, string, string>>
+                    ParseStringTemplate(this string str)
+        {
+            // {{key}}
+            var span = str.AsSpan();
+            var lines = new List<Tuple<int, string, string>>();
+            var offset = 0;
+            for (int i = 0; i < span.Length; i++)
+            {
+                if (span[i] == '{' && span[i + 1] == '{')
+                {
+                    lines.Add(new Tuple<int, string, string>(
+                        0, span.Slice(offset, i - offset).ToString(), string.Empty));
+                    i += 2;
+                    offset += i - offset;
+                    while (i + 1 < span.Length && span[i] != '}' && span[i + 1] != '}')
+                    {
+                        i++;
+                    }
+
+                    if (i + 1 < span.Length)
+                    {
+                        var key = span.Slice(offset, i - offset + 1);
+                        var value = string.Empty;
+                        // 类型1 {{Key}} 读取传入数据的Key字段
+                        var type = 1;
+                        // 类型 2: {{!key}}
+                        // 类型 3: {{key || key}}
+                        // 类型 4: {{|key}}
+                        // 类型 5: {{.key}}
+                        // 类型 6: {{/key}}
+                        // 类型 7: {{%key}}
+                        // 类型 8: {{^key}}
+                        // 类型 9: {{~key}}
+                        // 类型 10: {{@key}}
+
+                        if (key[0] == '!')
+                        {
+                            // 类型2 {{!Key<保留值>}} 测试传入数据的Key字段是否为空，非空时返回<保留值>
+                            type = 2;
+                            value = key.SubstringAfterKeep("<").ToString();
+                            key = key[1..].SubstringBefore("<");
+                        }
+                        else if (key.IndexOf("||") != -1)
+                        {
+                            // 类型3 {{Key||值}} 测试传入数据的Key字段是否为空，非空时返回Key字段的值，否则返回值
+                            type = 3;
+                            value = key.SubstringAfter("||").ToString();
+                            key = key.SubstringBefore("||").Trim();
+                        }
+                        else if (key[0] == '|')
+                        {
+                            type = 4;
+                            value = string.Empty;
+                            key = key[1..].Trim().ToString();
+                        }
+                        else if (key[0] == '.')
+                        {
+                            type = 5;
+                            value = string.Empty;
+                            key = key[1..].Trim().ToString();
+                        }
+                        else if (key[0] == '/')
+                        {
+                            // 类型6 {{/Key}} Key字段值转化为时间字符串
+                            type = 6;
+                            value = string.Empty;
+                            key = key[1..].Trim().ToString();
+                        }
+                        else if (key[0] == '%')
+                        {
+                            // 类型7 {{%Key}} 逃逸Key字段的值
+                            type = 7;
+                            value = string.Empty;
+                            key = key[1..].Trim().ToString();
+                        }
+                        else if (key[0] == '^')
+                        {
+                            // 类型7 {{^Key}} 转化数据为字符串
+                            type = 8;
+                            value = string.Empty;
+                            key = key[1..].Trim().ToString();
+                        }
+                        else if (key[0] == '~')
+                        {
+                            // 类型9 {{~Key}} 转化Key字符的值为Markdown
+                            type = 9;
+                            value = string.Empty;
+                            key = key[1..].Trim().ToString();
+                        }
+                        else if (key[0] == '@')
+                        {
+                            type = 10;
+                            var index = key.IndexOf('=');
+                            value =
+                                index != -1 ? key[(index + 1)..].ToString() : string.Empty;
+                            key = index != -1
+                                ? key.Slice(1, index - 1).Trim().ToString()
+                                : key[1..].Trim();
+                        }
+                        else if (key[0] == '$')
+                        {
+                            type = 11;
+                            value = key.SubstringAfter("|").ToString();
+                            key = key.SubstringBefore("|")[1..].ToString();
+                        }
+
+
+                        lines.Add(
+                            new Tuple<int, string, string>(type, key.ToString(), value));
+                        offset += i - offset + 3;
+                    }
+                }
+            }
+
+            if (span.Length > offset)
+            {
+                lines.Add(new Tuple<int, string, string>(
+                    0, span.Slice(offset, span.Length - offset).ToString(),
+                    string.Empty));
+            }
+
+            return lines;
+        }
+         public static string Undercore(string value)
+         {
+             if (value == null) return null;
+             return Regex.Replace(Regex.Replace(value, " ", "_").ToLower(), "\\W+", "");
+         }
+         public static string FormatDuration(long duration)
+         {
+             int h = (int)(duration / 3600);
+             int m = (int)(duration % 3600 / 60);
+             int s = (int)(duration % 3600 % 60);
+             var v = string.Empty;
+             if (h > 0)
+             {
+                 v = $"{h}时{m}分";
+             }
+             else
+             {
+                 v = $"{m}分";
+             }
+             if (s > 0)
+             {
+                 v += $"{s}秒";
+             }
+             return v;
+         }
+         private static Dictionary<string, string> topics = new Dictionary<string, string>(){
+             {"photoshop","Photoshop"},
+             {"android","Android"},
+             {"illustrator","Illustrator"},
+             {"marketing","营销"},
+             {"c","C"},
+             {"web_development","Web开发"},
+         };
+         public static string FormatCategory(String value)
+         {
+             foreach (var item in topics.Keys)
+             {
+                 if (topics[item] == value)
+                 {
+                     return item;
+                 }
+             }
+             return string.Empty;
+         }
+         public static string GetCategory(String value)
+         {
+             if (topics.TryGetValue(value, out var t))
+             {
+                 return t;
+             }
+             return string.Empty;
+         }
     }
 }

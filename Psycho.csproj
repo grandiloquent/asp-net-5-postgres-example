@@ -6,7 +6,11 @@
 
     <ItemGroup>
       <PackageReference Include="AngleSharp" Version="1.0.0-alpha-844" />
+      <PackageReference Include="LiteDB" Version="5.0.11" />
+      <PackageReference Include="Markdig" Version="0.26.0" />
       <PackageReference Include="Npgsql" Version="6.0.0-rc.1" />
+      <PackageReference Include="NUglify" Version="1.17.5" />
+      <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
     </ItemGroup>
 
     <ItemGroup>

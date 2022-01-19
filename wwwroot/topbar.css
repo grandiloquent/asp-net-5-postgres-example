@@ -1,0 +1,69 @@
+/*  <link rel="stylesheet" href="topbar.css"> */
+
+.topbar {
+    margin-top: 4px;
+    padding-bottom: 10px;
+    /* padding-bottom: 16px; */
+    height: 36px;
+    line-height: 28px;
+    overflow: hidden;
+    position: relative;
+    background-color: #fff;
+}
+.P1Ycoe {
+    background: -webkit-linear-gradient(0deg,rgba(255,255,255,0),#fff);
+    height: 40px;
+    position: absolute;
+    pointer-events: none;
+    right: 0;
+    top: 0;
+    width: 24px;
+    z-index: 2;
+}
+.Zgesjc {
+    -webkit-user-select: none;
+    display: block;
+    height: 51px;
+    overflow-y: hidden;
+    padding: 0 0 8px;
+    position: relative;
+    z-index: 1;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: scroll;
+    box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.08);
+    height: 36px;
+    margin-left: -3px;
+    margin-right: -3px;
+}
+.Zgesjc::-webkit-scrollbar{
+    display: none;
+}
+.hdtb-msb {
+    position: relative;
+    white-space: nowrap;
+    display: inline-block;
+    overflow: hidden;
+    padding-right: 8px;
+    padding-left: 11px;
+    margin-left: -4px;
+}
+.hdtb-mitem {
+    display: inline-block;
+    line-height: 27px;
+    height: 28px;
+    font-size: 14px;
+    text-align: center;
+    font-weight: 500;
+    font-family: Roboto-Medium, Roboto-Regular, Roboto-Medium, HelveticaNeue-Medium, Helvetica Neue, sans-serif-medium, Arial, sans-serif;
+    font-family: Google Sans, Roboto, Helvetica Neue, Arial, sans-serif;
+}
+.hdtb-mitem>a
+{
+    -webkit-tap-highlight-color: rgba(0,0,0,.00);
+    color: rgba(0,0,0,0.54);
+    outline: 0;
+    color: rgba(0, 0, 0, 0.54);
+    text-decoration: none;
+    display: inline-block;
+    padding: 8px 12px;
+}

@@ -25,14 +25,14 @@ namespace Psycho
                 "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36");
         }
 
-        public async Task<string> GetBaseAddress()
+        public async System.Threading.Tasks.Task<string> GetBaseAddress()
         {
             var hp = new HttpRequestMessage(HttpMethod.Head, "/?u=http://52ck.cc/&p=/");
             var rs = await _client.SendAsync(hp);
             return rs.Headers.TryGetValues(HeaderNames.Location, out var values) ? values.FirstOrDefault() : null;
         }
 
-        public async Task<List<Video>> GetVideos(int max, int type = 2)
+        public async System.Threading.Tasks.Task<List<Video>> GetVideos(int max, int type = 2)
         {
             var baseUrl = await GetBaseAddress();
             const int maxConcurrency = 2;
@@ -43,12 +43,12 @@ namespace Psycho
             }
 
             using var concurrencySemaphore = new SemaphoreSlim(maxConcurrency);
-            var tasks = new List<Task<Task<List<Video>>>>();
+            var tasks = new List<System.Threading.Tasks.Task<System.Threading.Tasks.Task<List<Video>>>>();
             foreach (var msg in messages)
             {
                 await concurrencySemaphore.WaitAsync();
 
-                var t = Task.Factory.StartNew(async () =>
+                var t = System.Threading.Tasks.Task.Factory.StartNew(async () =>
                 {
                     try
                     {
@@ -105,7 +105,7 @@ namespace Psycho
                 tasks.Add(t);
             }
 
-            var results = await Task.WhenAll(tasks.ToArray());
+            var results = await System.Threading.Tasks.Task.WhenAll(tasks.ToArray());
             return results.SelectMany(vResult => vResult.Result).ToList();
         }
 

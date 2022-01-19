@@ -1,0 +1,197 @@
+/*  <link rel="stylesheet" href="topbar-renderer.css"> */
+
+.topbar-renderer {
+    display: block;
+    background-color: hsla(0, 0%, 100%, 0.98);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 4;
+    padding: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left);
+}
+.topbar-renderer c3-overlay {
+    z-index: 4;
+}
+.topbar-renderer.in {
+    top: 0;
+    -webkit-transition: -webkit-transform 225ms cubic-bezier(0,0,0.2,1);
+    transition: -webkit-transform 225ms cubic-bezier(0,0,0.2,1);
+    transition: transform 225ms cubic-bezier(0,0,0.2,1);
+    transition: transform 225ms cubic-bezier(0,0,0.2,1), -webkit-transform 225ms cubic-bezier(0,0,0.2,1);
+    -webkit-transition-property: all;
+    transition-property: all;
+}
+.topbar-renderer.out {
+    top: -48px;
+    -webkit-transition: -webkit-transform 195ms cubic-bezier(0.4,0,1,1);
+    transition: -webkit-transform 195ms cubic-bezier(0.4,0,1,1);
+    transition: transform 195ms cubic-bezier(0.4,0,1,1);
+    transition: transform 195ms cubic-bezier(0.4,0,1,1), -webkit-transform 195ms cubic-bezier(0.4,0,1,1);
+    -webkit-transition-property: all;
+    transition-property: all;
+}
+.topbar-header {
+    position: relative;
+    z-index: 3;
+    box-shadow: 0 4px 2px -2px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+}
+.topbar-header[data-mode=searching] {
+    z-index: 4;
+    background-color: #f1f1f1;
+}
+.topbar-header-endpoint {
+    height: 48px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+}
+
+
+.topbar-logo {
+    color: red;
+    padding: 0 12px;
+    width: 30px;
+    height: 30px;
+    margin-left: -1px;
+}
+.topbar-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    color: #606060;
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.topbar-title {
+    -webkit-user-select: none;
+    user-select: none;
+    color: #212121;
+    font-weight: 500;
+    -webkit-box-flex: 1;
+    -webkit-flex-grow: 1;
+    flex-grow: 1;
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 400;
+}
+.topbar-header-content > .icon-button {
+    padding: 12px;
+    height: 48px;
+    width: 48px;
+}
+
+.topbar-back-arrow {
+    color: #606060;
+    padding: 12px;
+}
+.searchbox {
+    display: flex;
+    justify-content: flex-end;
+    color: #606060;
+    flex-grow: 1;
+    min-width: 0;
+}
+.searchbox-form {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+}
+.searchbox-input-wrapper {
+
+    flex-grow: 1;
+}
+.searchbox-dropdown {
+    position: absolute;
+    top: 48px;
+    left: 0;
+    right: 0;
+}
+.sbdd_a {
+    margin-top: -1px;
+    z-index: 989;
+    font-size: 1.4rem;
+    color: #030303;
+    background-color: #fff;
+    width: 100%;
+    position: relative;
+    text-align: left;
+}
+.sbsb_c {
+    padding: 0;
+    background-color: #f9f9f9;
+}
+.searchbox-input {
+    -webkit-box-flex: 1;
+    -webkit-flex-grow: 1;
+    flex-grow: 1;
+    margin: 4px 0 0;
+    font-size: 1.5rem;
+    font-weight: 400;
+    width: 100%;
+    outline: none;
+}
+.sbsb_b {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+.sbpqs_d {
+    padding: 10px 3px 11px 8px;
+
+
+    overflow: hidden;
+}
+.sbpqs_a {
+    color: #065fd4;
+    padding-right: 8px;
+}
+/*  */
+
+.menu-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    z-index: 4;
+}
+.menu-content {
+    position: relative;
+    z-index: 2;
+    max-height: 100%;
+    overflow-y: auto;
+    color: #030303;
+    background-color: #f9f9f9;
+    padding: 3px;
+}
+.menu-content:not(.menu-bottom) {
+    min-width: 250px;
+    max-width: 356px;
+    margin: 40px;
+}
+ytm-menu-item {
+    display: block;
+    padding: 3px 0;
+}
+.menu-item-button {
+    box-sizing: border-box;
+    display: block;
+    font-size: 1.6rem;
+    padding: 9px 12px;
+    text-align: initial;
+    text-transform: unset;
+    width: 100%;
+}

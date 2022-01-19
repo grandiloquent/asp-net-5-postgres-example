@@ -55,13 +55,13 @@ namespace Psycho
         }
 
         [HttpGet("url")]
-        public async Task<Video> GetVideoByUrl([FromQuery] string url)
+        public async System.Threading.Tasks.Task<Video> GetVideoByUrl([FromQuery] string url)
         {
             return await _dataService.QueryVideoByUrl(url);
         }
 
         [HttpPost("upload")]
-        public async Task<IActionResult> Upload([FromForm(Name = "file")] List<IFormFile> formFiles, string controller)
+        public async System.Threading.Tasks.Task<IActionResult> Upload([FromForm(Name = "file")] List<IFormFile> formFiles, string controller)
         {
             await using var buffer = new MemoryStream();
             await formFiles.First().CopyToAsync(buffer);
@@ -87,7 +87,7 @@ namespace Psycho
 
         [HttpGet("57ck")]
         [EnableCors("MyPolicy")]
-        public async Task<int> Fetch57CkVideos(int max = 1, int type = 2)
+        public async System.Threading.Tasks.Task<int> Fetch57CkVideos(int max = 1, int type = 2)
         {
             var videos = await _ckClient.GetVideos(max, type);
             await _dataService.InsertVideos(videos);
@@ -96,7 +96,7 @@ namespace Psycho
         }
 
         [HttpPost]
-        public async Task<string> InsertVideos(List<Video> videos)
+        public async System.Threading.Tasks.Task<string> InsertVideos(List<Video> videos)
         {
             if (videos.Count == 0)
             {
@@ -108,7 +108,7 @@ namespace Psycho
         }
 
         [HttpPost("update")]
-        public async Task<int> UpdateVideo([FromBody] Video video)
+        public async System.Threading.Tasks.Task<int> UpdateVideo([FromBody] Video video)
         {
             if (!CookieHelper.Check("psycho", Request, true))
             {
@@ -121,9 +121,9 @@ namespace Psycho
         }
 
         [HttpGet("record")]
-        public async Task<OkResult> RecordViews(int id)
+        public async System.Threading.Tasks.Task<OkResult> RecordViews(int id, int duration)
         {
-            await _dataService.RecordViews(id);
+            await _dataService.RecordViews(id, duration);
             return Ok();
         }
 

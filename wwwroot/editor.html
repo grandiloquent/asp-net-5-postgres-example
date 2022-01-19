@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<!--suppress ES6ConvertVarToLetConst -->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no,">
+    <style>
+        html {
+            height: 100%;
+            font-family: sans-serif;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            margin: 0;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            font-size: 14px;
+            line-height: 1.5;
+            color: #24292f;
+            background-color: #ffffff;
+            word-wrap: break-word;
+        }
+
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        textarea {
+            box-sizing: border-box;
+            font: inherit;
+            overflow: auto;
+            outline: none;
+            background-color: #f6f8fa;
+            margin: 0;
+            line-height: 1.5;
+            border: 0;
+            /*#d0d7de;*/
+            display: block;
+            width: 100%;
+            padding: 8px;
+            resize: none;
+            flex-grow: 1;
+        }
+
+        .toolbar {
+            box-sizing: border-box;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            padding-right: 8px;
+            padding-left: 8px;
+            white-space: nowrap;
+            display: flex;
+            float: right;
+            background: transparent;
+        }
+
+        .toolbar-item {
+            box-sizing: border-box;
+            position: relative;
+            margin-right: 4px !important;
+            margin-left: 4px !important;
+            display: block;
+            float: left;
+            padding: 4px;
+            font-size: 14px;
+            color: #57606a;
+            cursor: pointer;
+            background: none;
+            border: 0;
+        }
+
+        .octicon {
+            display: inline-block;
+            overflow: visible !important;
+            vertical-align: text-bottom;
+            fill: currentColor;
+        }
+
+        .input-wrapper {
+            box-sizing: border-box;
+            padding: 8px !important;
+        }
+
+        input {
+
+            box-sizing: border-box;
+            font: inherit;
+            margin: 0;
+            overflow: visible;
+            padding: 5px 12px;
+            line-height: 20px;
+            color: #24292f;
+            vertical-align: middle;
+            border: #d0d7de;
+            outline: none;
+            box-shadow: inset 0 1px 0 rgba(208, 215, 222, 0.2);
+            background-color: #f6f8fa;
+            font-size: 16px;
+            display: block;
+            width: 100%;
+        }
+
+        .button-wrapper {
+            box-sizing: border-box;
+            justify-content: flex-end !important;
+            align-items: center !important;
+            margin-bottom: 8px !important;
+            margin-right: 8px !important;
+            margin-left: 8px !important;
+            padding-right: 0 !important;
+            padding-left: 0 !important;
+            display: flex !important;
+        }
+
+        button {
+            box-sizing: border-box;
+            font: inherit;
+            margin: 0;
+            overflow: visible;
+            text-transform: none;
+            position: relative;
+            display: inline-block;
+            padding: 5px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 20px;
+            white-space: nowrap;
+            vertical-align: middle;
+            cursor: pointer;
+            user-select: none;
+            border: 1px solid;
+            border-radius: 6px;
+            appearance: none;
+            transition: .2s cubic-bezier(0.3, 0, 0.5, 1);
+            transition-property: color, background-color, border-color;
+            color: #ffffff;
+            background-color: #2da44e;
+            border-color: rgba(27, 31, 36, 0.15);
+            box-shadow: 0 1px 0 rgba(27, 31, 36, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="editor-container">
+
+        <div style="display: flex;">
+            <div id="action-title"
+                style="border-right: 1px solid #f2f2f2; width: 48px;height: 32px;display: flex;align-items: center;justify-content: center;">
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <path d="M5.016 3.984h13.969v3h-5.484v12h-3v-12h-5.484v-3z"></path>
+                </svg>
+            </div>
+
+            <div id="action-trans"
+                style="border-right: 1px solid #f2f2f2;width: 48px;height: 32px;display: flex;align-items: center;justify-content: center;">
+                <!-- Generated by IcoMoon.io -->
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <title>g_translate</title>
+                    <path
+                        d="M21.516 20.484v-13.969q0-0.422-0.305-0.727t-0.727-0.305h-9.047l1.313 3.797h1.453v-1.266h1.266v1.266h4.547v1.313h-1.922q-0.703 2.344-2.391 4.219l3.281 3.281-0.938 0.891-3.094-3.094 1.031 3.094-1.969 2.531h6.469q0.422 0 0.727-0.305t0.305-0.727zM13.172 10.594l0.797 2.344 0.844 1.125q1.453-1.594 2.063-3.469h-3.703zM6.984 15.984q2.156 0 3.492-1.359t1.336-3.516q0-0.047-0.141-1.031h-4.688v1.734h2.953q-0.094 0.891-0.844 1.641t-2.109 0.75q-1.313 0-2.227-0.938t-0.914-2.25q0-1.359 0.914-2.297t2.227-0.938q1.266 0 2.063 0.797l1.313-1.266q-1.453-1.313-3.375-1.313-2.063 0-3.516 1.477t-1.453 3.539 1.453 3.516 3.516 1.453zM21 3.984q0.797 0 1.406 0.609t0.609 1.406v15q0 0.797-0.609 1.406t-1.406 0.609h-9l-0.984-3h-8.016q-0.797 0-1.406-0.609t-0.609-1.406v-15q0-0.797 0.609-1.406t1.406-0.609h6.984l1.031 3h9.984z">
+                    </path>
+                </svg>
+
+            </div>
+            <div id="action-clear"
+                style="border-right: 1px solid #f2f2f2;width: 48px;height: 32px;display: flex;align-items: center;justify-content: center;">
+                <!-- Generated by IcoMoon.io -->
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <title>clear</title>
+                    <path
+                        d="M18.984 6.422l-5.578 5.578 5.578 5.578-1.406 1.406-5.578-5.578-5.578 5.578-1.406-1.406 5.578-5.578-5.578-5.578 1.406-1.406 5.578 5.578 5.578-5.578z">
+                    </path>
+                </svg>
+
+
+            </div>
+            <div id="action-code"
+                style="border-right: 1px solid #f2f2f2;width: 48px;height: 32px;display: flex;align-items: center;justify-content: center;">
+
+                <!-- Generated by IcoMoon.io -->
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <title>code</title>
+                    <path
+                        d="M14.578 16.594l4.641-4.594-4.641-4.594 1.406-1.406 6 6-6 6zM9.422 16.594l-1.406 1.406-6-6 6-6 1.406 1.406-4.641 4.594z">
+                    </path>
+                </svg>
+
+            </div>
+            <div id="action-list"
+                style="border-right: 1px solid #f2f2f2;width: 48px;height: 32px;display: flex;align-items: center;justify-content: center;">
+
+                <!-- Generated by IcoMoon.io -->
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <title>list</title>
+                    <path
+                        d="M6.984 6.984h14.016v2.016h-14.016v-2.016zM6.984 17.016v-2.016h14.016v2.016h-14.016zM6.984 12.984v-1.969h14.016v1.969h-14.016zM3 9v-2.016h2.016v2.016h-2.016zM3 17.016v-2.016h2.016v2.016h-2.016zM3 12.984v-1.969h2.016v1.969h-2.016z">
+                    </path>
+                </svg>
+
+            </div>
+            <div id="action-expand-more"
+                style="border-right: 1px solid #f2f2f2;width: 48px;height: 32px;display: flex;align-items: center;justify-content: center;">
+
+                <!-- Generated by IcoMoon.io -->
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <title>expand_more</title>
+                    <path d="M16.594 8.578l1.406 1.406-6 6-6-6 1.406-1.406 4.594 4.594z"></path>
+                </svg>
+
+
+            </div>
+        </div>
+        <textarea name="content" autofocus></textarea>
+
+        <div id="wrapper" style="display: none">
+            <div class="toolbar">
+                <div class="toolbar-item" id="octicon-heading">
+                    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
+                        data-view-component="true" class="octicon octicon-heading">
+                        <path fill-rule="evenodd"
+                            d="M3.75 2a.75.75 0 01.75.75V7h7V2.75a.75.75 0 011.5 0v10.5a.75.75 0 01-1.5 0V8.5h-7v4.75a.75.75 0 01-1.5 0V2.75A.75.75 0 013.75 2z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="toolbar-item" id="octicon-bold">
+                    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
+                        data-view-component="true" class="octicon octicon-bold">
+                        <path fill-rule="evenodd"
+                            d="M4 2a1 1 0 00-1 1v10a1 1 0 001 1h5.5a3.5 3.5 0 001.852-6.47A3.5 3.5 0 008.5 2H4zm4.5 5a1.5 1.5 0 100-3H5v3h3.5zM5 9v3h4.5a1.5 1.5 0 000-3H5z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="toolbar-item" id="octicon-italic">
+                    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
+                        data-view-component="true" class="octicon octicon-italic">
+                        <path fill-rule="evenodd"
+                            d="M6 2.75A.75.75 0 016.75 2h6.5a.75.75 0 010 1.5h-2.505l-3.858 9H9.25a.75.75 0 010 1.5h-6.5a.75.75 0 010-1.5h2.505l3.858-9H6.75A.75.75 0 016 2.75z">
+                        </path>
+                    </svg>
+                </div>
+
+                <div class="toolbar-item" id="octicon-chinese"
+                    style="height: 29px;width: 24px;display: flex;align-items: center;">
+                    <svg id="icon-g_translate" viewBox="0 0 24 24">
+                        <path
+                            d="M21.516 20.484v-13.969q0-0.422-0.305-0.727t-0.727-0.305h-9.047l1.313 3.797h1.453v-1.266h1.266v1.266h4.547v1.313h-1.922q-0.703 2.344-2.391 4.219l3.281 3.281-0.938 0.891-3.094-3.094 1.031 3.094-1.969 2.531h6.469q0.422 0 0.727-0.305t0.305-0.727zM13.172 10.594l0.797 2.344 0.844 1.125q1.453-1.594 2.063-3.469h-3.703zM6.984 15.984q2.156 0 3.492-1.359t1.336-3.516q0-0.047-0.141-1.031h-4.688v1.734h2.953q-0.094 0.891-0.844 1.641t-2.109 0.75q-1.313 0-2.227-0.938t-0.914-2.25q0-1.359 0.914-2.297t2.227-0.938q1.266 0 2.063 0.797l1.313-1.266q-1.453-1.313-3.375-1.313-2.063 0-3.516 1.477t-1.453 3.539 1.453 3.516 3.516 1.453zM21 3.984q0.797 0 1.406 0.609t0.609 1.406v15q0 0.797-0.609 1.406t-1.406 0.609h-9l-0.984-3h-8.016q-0.797 0-1.406-0.609t-0.609-1.406v-15q0-0.797 0.609-1.406t1.406-0.609h6.984l1.031 3h9.984z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="toolbar-item" id="octicon-english"
+                    style="height: 29px;width: 24px;display: flex;align-items: center;">
+                    <svg id="icon-translate" viewBox="0 0 24 24">
+                        <path
+                            d="M15.891 17.016h3.234l-1.641-4.359zM18.516 9.984l4.5 12h-2.016l-1.125-3h-4.734l-1.125 3h-2.016l4.5-12h2.016zM12.891 15.047l-0.797 2.063-3.094-3.094-5.016 4.969-1.406-1.406 5.109-5.016q-1.875-2.063-3-4.547h2.016q0.984 1.875 2.297 3.328 2.156-2.391 3.188-5.344h-11.203v-2.016h7.031v-1.969h1.969v1.969h7.031v2.016h-2.953q-0.469 1.5-1.547 3.398t-2.156 3.117l-0.047 0.047z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="toolbar-item" id="octicon-remove"
+                    style="height: 29px;width: 24px;display: flex;align-items: center;">
+                    <svg id="icon-clear" viewBox="0 0 24 24">
+                        <path
+                            d="M18.984 6.422l-5.578 5.578 5.578 5.578-1.406 1.406-5.578-5.578-5.578 5.578-1.406-1.406 5.578-5.578-5.578-5.578 1.406-1.406 5.578 5.578 5.578-5.578z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="toolbar-item" id="octicon-code">
+                    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
+                        data-view-component="true" class="octicon octicon-code">
+                        <path fill-rule="evenodd"
+                            d="M4.72 3.22a.75.75 0 011.06 1.06L2.06 8l3.72 3.72a.75.75 0 11-1.06 1.06L.47 8.53a.75.75 0 010-1.06l4.25-4.25zm6.56 0a.75.75 0 10-1.06 1.06L13.94 8l-3.72 3.72a.75.75 0 101.06 1.06l4.25-4.25a.75.75 0 000-1.06l-4.25-4.25z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="toolbar-item">
+                    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
+                        data-view-component="true" class="octicon octicon-link">
+                        <path fill-rule="evenodd"
+                            d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="toolbar-item" id="octicon-list-unordered">
+                    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
+                        data-view-component="true" class="octicon octicon-list-unordered">
+                        <path fill-rule="evenodd"
+                            d="M2 4a1 1 0 100-2 1 1 0 000 2zm3.75-1.5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zM3 8a1 1 0 11-2 0 1 1 0 012 0zm-1 6a1 1 0 100-2 1 1 0 000 2z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="toolbar-item">
+                    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
+                        data-view-component="true" class="octicon octicon-list-ordered">
+                        <path fill-rule="evenodd"
+                            d="M2.003 2.5a.5.5 0 00-.723-.447l-1.003.5a.5.5 0 00.446.895l.28-.14V6H.5a.5.5 0 000 1h2.006a.5.5 0 100-1h-.503V2.5zM5 3.25a.75.75 0 01.75-.75h8.5a.75.75 0 010 1.5h-8.5A.75.75 0 015 3.25zm0 5a.75.75 0 01.75-.75h8.5a.75.75 0 010 1.5h-8.5A.75.75 0 015 8.25zm0 5a.75.75 0 01.75-.75h8.5a.75.75 0 010 1.5h-8.5a.75.75 0 01-.75-.75zM.924 10.32l.003-.004a.851.851 0 01.144-.153A.66.66 0 011.5 10c.195 0 .306.068.374.146a.57.57 0 01.128.376c0 .453-.269.682-.8 1.078l-.035.025C.692 11.98 0 12.495 0 13.5a.5.5 0 00.5.5h2.003a.5.5 0 000-1H1.146c.132-.197.351-.372.654-.597l.047-.035c.47-.35 1.156-.858 1.156-1.845 0-.365-.118-.744-.377-1.038-.268-.303-.658-.484-1.126-.484-.48 0-.84.202-1.068.392a1.858 1.858 0 00-.348.384l-.007.011-.002.004-.001.002-.001.001a.5.5 0 00.851.525zM.5 10.055l-.427-.26.427.26z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="toolbar-item" id="octicon-insert-photo">
+                    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
+                        data-view-component="true" class="octicon octicon-cross-reference">
+                        <path fill-rule="evenodd"
+                            d="M16 1.25v4.146a.25.25 0 01-.427.177L14.03 4.03l-3.75 3.75a.75.75 0 11-1.06-1.06l3.75-3.75-1.543-1.543A.25.25 0 0111.604 1h4.146a.25.25 0 01.25.25zM2.75 3.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h2a.75.75 0 01.75.75v2.19l2.72-2.72a.75.75 0 01.53-.22h4.5a.25.25 0 00.25-.25v-2.5a.75.75 0 111.5 0v2.5A1.75 1.75 0 0113.25 13H9.06l-2.573 2.573A1.457 1.457 0 014 14.543V13H2.75A1.75 1.75 0 011 11.25v-7.5C1 2.784 1.784 2 2.75 2h5.5a.75.75 0 010 1.5h-5.5z">
+                        </path>
+                    </svg>
+                </div>
+            </div>
+            <div class="input-wrapper">
+                <input type="text" autocomplete="off" placeholder="标题" required name="title">
+            </div>
+            <div class="input-wrapper" style="display: grid; grid-template-columns: repeat(3,1fr);">
+                <input type="text" autocomplete="off" placeholder="封面" required name="thumbnail">
+                <input type="text" autocomplete="off" placeholder="分类" required name="category">
+                <input type="text" autocomplete="off" placeholder="关键字" required name="keywords">
+            </div>
+
+
+            <div class="input-wrapper" style="display: flex">
+                <input type="text" autocomplete="off" placeholder="查找" required name="find">
+                <input type="text" autocomplete="off" placeholder="替换" required name="replace">
+            </div>
+            <div class="button-wrapper">
+                <button id="image">封面</button>
+                <button id="category">分类</button>
+                <button id="submit">提交</button>
+            </div>
+        </div>
+    </div>
+    <script src="../editor.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dom-to-image@2.6.0/dist/dom-to-image.min.js"></script>
+    <script>
+
+        document.getElementById('action-expand-more')
+            .addEventListener('click', evt => {
+                if (document.getElementById('wrapper').hasAttribute('style')) {
+                    document.getElementById('wrapper').removeAttribute('style');
+                } else {
+                    document.getElementById('wrapper')
+                        .style.display = 'none';
+                }
+            })
+
+        document.querySelector('#category').addEventListener('click', async ev => {
+            ev.stopPropagation();
+            const res = await fetch('/admin/next');
+            const id = await res.text();
+            window.location.href = `/admin/editor?u=${id}`;
+        })
+
+
+        const title = document.querySelector('[name=title]');
+
+        const content = document.querySelector('[name=content]');
+        const thumbnail = document.querySelector('[name=thumbnail]');
+        const category = document.querySelector('[name=category]');
+
+        let uniqueId;
+
+        async function loadData() {
+            uniqueId = new URL(window.location.href).searchParams.get("u");
+            if (uniqueId) {
+                const response = await fetch(`/admin/article?u=${uniqueId}`);
+                const data = await response.json();
+                title.value = data.title;
+                content.value = data.content + "\n".repeat(5);
+                thumbnail.value = data.thumbnail;
+                if (data.category)
+                    category.value = data.category;
+            } else {
+                content.value = localStorage.getItem("strings");
+            }
+        }
+
+        async function google(value, english) {
+            const response = await fetch(`https://service-mayeka3y-1258705152.hk.apigw.tencentcs.com/release/translate?q=${encodeURIComponent(value.trim())}&to=${english ? "zh" : "en"}`);
+            const obj = await response.text();
+            const lines1 = [];
+            const lines2 = [];
+            const translated = JSON.parse(obj.replaceAll(/您/g, '你').replaceAll(/ - /g, "——"));
+            if (translated.sentences) {
+                const sentences = translated.sentences;
+                for (let index = 0; index < sentences.length; index++) {
+                    const element = sentences[index];
+                    lines1.push(element.orig);
+                    lines2.push(element.trans);
+                }
+            } else {
+                const trans = translated.trans_result;
+                for (let index = 0; index < trans.length; index++) {
+                    const element = trans[index];
+                    lines1.push(element.src);
+                    lines2.push(element.dst);
+                }
+            }
+            return [lines1, lines2];
+        }
+
+        async function trans(editor, english) {
+            let start = editor.selectionStart;
+            let end = editor.selectionEnd;
+
+            const string = editor.value;
+            while (start > 0 && string[start - 1] !== '\n') {
+                start--;
+            }
+            while (end < string.length) {
+                end++;
+                if (string[end] === '\n') break;
+
+            }
+            const value = string.substring(start, end);
+            if (!value.trim()) return;
+            const lines = await google(value, english);
+
+            editor.setRangeText(`${lines[0].join(' ')}\n\n${lines[1].join(' ')}`, start, end);
+
+        }
+
+        function customTextarea() {
+
+
+            document.getElementById('action-title')
+                .addEventListener('click', ev => {
+                    formatHead(content, 2);
+                });
+
+            document.querySelector('#action-clear')
+                .addEventListener('click', async ev => {
+                    // start 鼠标指针所在位置+1的字符
+                    let start = content.selectionStart;
+                    let end = content.selectionEnd;
+                    while (start > -1) {
+                        if (content.value[start] === '\n') {
+                            while (start > -1 && /\s/.test(content.value[start])) {
+                                start--
+                            }
+                            start++;
+                            break;
+                        }
+                        start--;
+                    }
+                    while (end < content.value.length) {
+                        if (content.value[end] === '\n') {
+                            while (end < content.value.length && /\s/.test(content.value[end])) {
+                                end++
+                            }
+                            end--
+                            break;
+                        }
+                        end++
+                    }
+
+                    content.setRangeText('\n', start, end);
+                    /* const p = findWhitespaceLine(content);
+                     content.setRangeText('', p[0], p[1] + 1);*/
+                });
+            document.querySelector('#action-trans')
+                .addEventListener('click', async ev => {
+                    await trans(content, 1);
+                });
+            document.querySelector('#octicon-english')
+                .addEventListener('click', async ev => {
+                    await trans(content, 0);
+                });
+            document.getElementById('action-list')
+                .addEventListener('click', ev => {
+                    const p = findExtendPosition(content);
+                    content.setRangeText(
+                        content.value.substring(p[0], p[1])
+                            .split('\n')
+                            .map(i => {
+                                // console.log(i);
+                                // if (i.startsWith('*')) {
+                                //     return i.substring(2);
+                                // } else {}
+                                return '- ' + i;
+
+                            })
+                            .join('\n'), p[0], p[1]);
+                });
+            document.getElementById('octicon-bold')
+                .addEventListener('click', ev => {
+                    let start = content.selectionStart;
+                    let end = content.selectionEnd;
+                    if (start !== end) {
+                        processSelection(content, (selection) => {
+                            const prefix = start - 1 > -1 && content.value[start - 1] !== ' ' && content.value[start - 1] !== '\n' ?
+                                ' ' : '';
+                            return prefix + '**' + selection + '** ';
+
+                        });
+                    } else {
+                        const string = content.value;
+                        while (start > 0 && string[start - 1] !== '\n') {
+                            start--;
+                        }
+                        while (end < string.length) {
+                            end++;
+                            if (string[end] === '\n') break;
+
+                        }
+                        content.setRangeText(`**${string.substring(start, end)}**`, start, end);
+                    }
+
+                });
+
+            document.getElementById('action-code').addEventListener('click', ev => {
+                /*processSelection(content, (selection) => {
+                    return '`' + selection + '`';
+                });*/
+                formatCode(content);
+            });
+            document.getElementById('octicon-insert-photo').addEventListener('click', ev => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.addEventListener('change', async ev => {
+                    const file = input.files[0];
+                    const imageFile = await uploadImage(file, file.name);
+                    processSelection(content, (selection) => {
+                        return `![${selection}](${imageFile.fileName})`;
+                    })
+                });
+                input.click();
+            });
+            thumbnail.addEventListener('click', ev => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.addEventListener('change', async ev => {
+                    const file = input.files[0];
+                    const imageFile = await uploadImage(file, file.name);
+                    thumbnail.value = imageFile.fileName;
+                });
+                input.click();
+            });
+
+            document.getElementById('submit').addEventListener('click', ev => {
+                ev.stopPropagation();
+
+                const obj = {};
+                const contentString = content.value.trim();
+                if (contentString)
+                    obj.content = contentString;
+                else
+                    return;
+                if (uniqueId) {
+                    obj.uniqueId = uniqueId;
+                }
+                const titleString = title.value.trim();
+                if (titleString)
+                    obj.title = titleString;
+
+
+                const thumbnailString = thumbnail.value.trim();
+                if (thumbnailString)
+                    obj.thumbnail = thumbnailString;
+                const categoryString = category.value.trim();
+                if (categoryString)
+                    obj.category = categoryString;
+
+
+                fetch('/admin', {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(obj)
+                }).then(res => res.text()).then(res => {
+                    uniqueId = res;
+                    //window.location.href = window.location.origin + window.location.pathname + "?u=" + res;
+                    //document.getElementById('toast').setAttribute('message', 'Success');
+                })
+            });
+        }
+
+        async function uploadImage(image, name) {
+            const form = new FormData();
+            form.append('image', image, name)
+
+            const response = await fetch('/admin/upload', {
+                method: 'POST',
+                body: form
+            });
+            return await response.json();
+        }
+
+        function indent(editor, increase) {
+            const string = editor.value;
+            const p = findExtendPosition(editor);
+            editor.focus();
+            const selection = string.substring(p[0], p[1]);
+            editor.setRangeText(selection.split('\n').map(i => {
+                if (increase) {
+                    return `  ${i}`;
+                } else {
+                    return i.replace(/^ {2}/, '');
+                }
+            }).join('\n'), p[0], p[1]);
+
+
+        }
+
+        function findExtendPosition(editor) {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            let string = editor.value;
+            let offsetStart = start;
+            while (offsetStart > 0) {
+                if (!/\s/.test(string[offsetStart - 1]))
+                    offsetStart--;
+                else {
+                    let os = offsetStart;
+                    while (os > 0 && /\s/.test(string[os - 1])) {
+                        os--;
+                    }
+                    if ([...string.substring(offsetStart, os).matchAll(/\n/g)].length > 1) {
+                        break;
+                    }
+                    offsetStart = os;
+                }
+            }
+            let offsetEnd = end;
+            while (offsetEnd < string.length) {
+                if (!/\s/.test(string[offsetEnd + 1]))
+                    offsetEnd++;
+                else {
+                    let oe = offsetEnd;
+                    while (oe < string.length && /\s/.test(string[oe + 1])) {
+                        oe++;
+                    }
+                    if ([...string.substring(offsetEnd, oe + 1).matchAll(/\n/g)].length > 1) {
+                        offsetEnd++;
+                        break;
+                    }
+                    offsetEnd = oe;
+                }
+            }
+            return [offsetStart, offsetEnd];
+        }
+
+        function formatHead(editor, count) {
+            // console.log("formatHead, ");
+            // let start = editor.selectionStart;
+            // const string = editor.value;
+            // while (start - 1 > -1 && string.charAt(start - 1) !== '\n') {
+            //     start--;
+            // }
+            // editor.setRangeText('#'.repeat(count || 2) + " ", start, start);
+
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const string = editor.value;
+
+
+            let offsetStart = start;
+            while (offsetStart > 0) {
+                if (string[offsetStart - 1] !== '\n')
+                    offsetStart--;
+                else {
+                    while (offsetStart > 0) {
+                        if (/\s/.test(string[offsetStart - 1]))
+                            offsetStart--;
+                        else break;
+                    }
+                    break;
+                }
+            }
+            let offsetEnd = end;
+            while (offsetEnd < string.length) {
+                if (string[offsetEnd + 1] !== '\n')
+                    offsetEnd++;
+                else {
+                    while (offsetEnd < string.length) {
+                        if (/\s/.test(string[offsetEnd + 1]))
+                            offsetEnd++;
+                        else break;
+                    }
+                    break;
+                }
+            }
+
+            const str = string.substring(offsetStart, offsetEnd).trim();
+            if (str.startsWith('#')) {
+                editor.setRangeText(`\n\n#${str}\n`, offsetStart,
+                    offsetEnd);
+
+            } else {
+                editor.setRangeText(`\n\n${'#'.repeat(count)} ${str}\n`, offsetStart,
+                    offsetEnd);
+            }
+            editor.selectionStart = offsetStart + 1;
+
+        }
+
+        function processSelection(editor, process) {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            let string = editor.value.substring(start, end);
+            if (process) {
+                string = process(string);
+            }
+            editor.setRangeText(string, start, end);
+        }
+
+        customTextarea();
+        loadData();
+
+        function formatCode(editor) {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const string = editor.value;
+
+            if (start === end) {
+                let offsetStart = start;
+                while (offsetStart > 0) {
+                    if (/[a-zA-Z0-9+_.\(\)<>:-]/.test(string[offsetStart - 1]))
+                        offsetStart--;
+                    else break;
+                }
+                let offsetEnd = end;
+                while (offsetEnd < string.length) {
+
+                    if (/[a-zA-Z0-9+_.\(\)<>:-]/.test(string[offsetEnd + 1]))
+                        offsetEnd++;
+                    else break;
+
+                }
+                offsetEnd++
+                const str = string.substring(offsetStart, offsetEnd).trim();
+                if (str) {
+
+                    editor.setRangeText('`' + str + '`', offsetStart,
+                        offsetEnd);
+
+                } else {
+                    editor.setRangeText("\n\n```c++\n\n```\n\n", offsetStart,
+                        offsetEnd);
+                }
+
+            } else {
+                const str = string.substring(start,
+                    end).trim();
+                editor.setRangeText("```c\n" + str + "\n```", start,
+                    end);
+            }
+        }
+
+        document.querySelector('[name=find]')
+            .addEventListener('keydown', ev => {
+                if (ev.keyCode === 13) {
+                    ev.preventDefault();
+                    const string = ev.target.value;
+                    const selectionStart = content.value.indexOf(string, content.selectionEnd);
+                    content.focus();
+                    content.selectionStart = selectionStart;
+                    content.selectionEnd = selectionStart + string.length;
+                    const textArea = content;
+                    const fullText = textArea.value;
+                    textArea.value = fullText.substring(0, selectionStart + string.length);
+                    textArea.scrollTop = textArea.scrollHeight;
+                    textArea.value = fullText;
+
+                    textArea.setSelectionRange(selectionStart, selectionStart + string.length);
+                }
+            });
+
+        document.querySelector('[name=replace]')
+            .addEventListener('keydown', ev => {
+                if (ev.keyCode === 13) {
+                    content.value = content.value.replaceAll(document.querySelector('[name=find]').value,
+                        ev.target.value);
+                }
+            });
+
+
+        const colors = ['#F44336', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5', '#2196F3', '#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722', '#795548', '#9E9E9E', '#607D8B'];
+
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min)) + min; //不含最大值，含最小值
+        }
+
+        document.getElementById('image').addEventListener('click', evt => {
+            var node = document.createElement('div');
+            node.setAttribute('style', 'width: 640px;height: 360px;display: flex;justify-content: center;align-content: center;align-items: center;font-size: 64px;line-height: 1.25em;text-align: center;color: #fff;');
+
+            node.textContent = title.value.trim();
+            node.style.background = colors[getRandomInt(0, colors.length)];
+            document.body.append(node);
+
+            domtoimage.toPng(node)
+                .then(function (dataUrl) {
+                    var link = document.createElement('a');
+                    link.download = '1.png';
+                    link.href = dataUrl;
+                    link.click();
+                    node.remove();
+                })
+                .catch(function (error) {
+                    console.error('oops, something went wrong!', error);
+                });
+        });
+        document.addEventListener('visibilitychange', evt => {
+            if (!uniqueId) {
+                localStorage.setItem("strings", content.value);
+            } else {
+                document.getElementById('submit').click();
+            }
+        })
+        window.onbeforeunload = () => {
+            if (!uniqueId) {
+                localStorage.setItem("strings", content.value);
+            } else {
+                document.getElementById('submit').click();
+            }
+        }
+    </script>
+</body>
+
+</html>

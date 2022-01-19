@@ -108,13 +108,13 @@ async function applyVideos() {
             details.appendChild(largeMediaItemInfo);
             ytmLargeMediaItem.appendChild(details);
 
-            ytmLargeMediaItem.addEventListener('click', ev => {
+            ytmLargeMediaItem.addEventListener('click', async ev => {
                 slimVideoInformationTitle.textContent = v.title;
                 const href = ytmLargeMediaItem.getAttribute('data-href');
-                const id = ytmLargeMediaItem.getAttribute('data-id');
+                /*const id = ytmLargeMediaItem.getAttribute('data-id');
                 fetch(`/api/video/record?id=${id}`).then(res => res.text()).then(res => {
                     console.log(res);
-                });
+                });*/
 
                 video.pause();
                 video.currentTime = 0;
@@ -122,11 +122,23 @@ async function applyVideos() {
                 progressBarLoaded.style.width = '0';
                 progressBarPlayheadWrapper.style.marginLeft = '0';
 
+                if (window.JInterface) {
+                    const id = ytmLargeMediaItem.getAttribute('data-id');
+                    if (href.startsWith("http://") || href.startsWith("https://"))
+                        window.JInterface.parse(href,id);
+                    else
+                        window.JInterface.parse(baseUri + href,id);
+                } 
+                /*else {
+                    const response = await fetch(`https://service-mayeka3y-1258705152.hk.apigw.tencentcs.com/release/?v=${href}`);
+                    const js = await response.text();
+                    if (js.indexOf('{') !== -1)
+                        video.src = JSON.parse(js).videoUri;
+                    else
+                        video.src = js;
+                    video.play();
+                }*/
 
-                if (href.startsWith("http://") || href.startsWith("https://"))
-                    window.JInterface.parse(href);
-                else
-                    window.JInterface.parse(baseUri + href);
             });
 
             documentFragment.appendChild(ytmLargeMediaItem);

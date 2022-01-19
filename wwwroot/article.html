@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{@data=Article}}
+    <title>{{Title}} - KingPunch Studio</title>
+    {{@end}}
+    {{@Css=
+    <link rel="stylesheet" href="../../reset.css">
+    <link rel="stylesheet" href="../../topbar-renderer.css">
+    <link rel="stylesheet" href="../../topbar.css">
+    <link rel="stylesheet" href="../../item-renderer.css">
+    <link rel="stylesheet" href="../../markdown.css">
+    }}
+    <link rel="stylesheet" href="https://unpkg.com/@highlightjs/cdn-assets@11.4.0/styles/default.min.css">
+    <script src="https://unpkg.com/@highlightjs/cdn-assets@11.4.0/highlight.min.js"></script>
+    <style>
+        .table {
+            width: 100%;
+            margin-bottom: 10px;
+            border-collapse: collapse;
+            font-size: 12px;
+            border-spacing: 0;
+            line-height: 18px;
+            max-width: 100%;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+            outline: 0;
+            margin-top: 20px;
+        }
+
+        .table td:first-child {
+            width: 72px;
+        }
+
+        .table td {
+            padding: 8px;
+            border: 1px solid #dadada;
+            text-align: left;
+            margin: 0;
+            vertical-align: baseline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="topbar-renderer">
+        <c3-overlay hidden>
+            <button class="hidden-button" aria-label="关闭搜索功能"></button>
+        </c3-overlay>
+        <header class="topbar-header">
+            <button class="topbar-back-arrow" hidden>
+                <c3-icon class="undefined" flip-for-rtl="true">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
+                        height="24" width="24">
+                        <path d="M21,11v1H5.64l6.72,6.72l-0.71,0.71L3.72,11.5l7.92-7.92l0.71,0.71L5.64,11H21z"></path>
+                    </svg>
+                </c3-icon>
+            </button>
+            <button class="topbar-header-endpoint">
+                <c3-icon class="topbar-logo">
+                    <svg id="icon-link" viewBox="0 0 24 24">
+                        <path
+                            d="M9.199 13.599c0.992 1.327 2.43 2.126 3.948 2.345s3.123-0.142 4.45-1.134c0.239-0.179 0.465-0.375 0.655-0.568l2.995-2.995c1.163-1.204 1.722-2.751 1.696-4.285s-0.639-3.061-1.831-4.211c-1.172-1.132-2.688-1.692-4.199-1.683-1.492 0.008-2.984 0.571-4.137 1.683l-1.731 1.721c-0.392 0.389-0.394 1.023-0.004 1.414s1.023 0.394 1.414 0.004l1.709-1.699c0.77-0.742 1.763-1.117 2.76-1.123 1.009-0.006 2.016 0.367 2.798 1.122 0.795 0.768 1.203 1.783 1.221 2.808s-0.355 2.054-1.11 2.836l-3.005 3.005c-0.114 0.116-0.263 0.247-0.428 0.37-0.885 0.662-1.952 0.902-2.967 0.756s-1.971-0.678-2.632-1.563c-0.331-0.442-0.957-0.533-1.4-0.202s-0.533 0.957-0.202 1.4zM14.801 10.401c-0.992-1.327-2.43-2.126-3.948-2.345s-3.124 0.142-4.451 1.134c-0.239 0.179-0.464 0.375-0.655 0.568l-2.995 2.995c-1.163 1.204-1.722 2.751-1.696 4.285s0.639 3.061 1.831 4.211c1.172 1.132 2.688 1.692 4.199 1.683 1.492-0.008 2.984-0.571 4.137-1.683l1.723-1.723c0.391-0.391 0.391-1.024 0-1.414s-1.024-0.391-1.414 0l-1.696 1.698c-0.77 0.742-1.763 1.117-2.76 1.123-1.009 0.006-2.016-0.367-2.798-1.122-0.795-0.768-1.203-1.783-1.221-2.808s0.355-2.054 1.11-2.836l3.005-3.005c0.114-0.116 0.263-0.247 0.428-0.37 0.885-0.662 1.952-0.902 2.967-0.756s1.971 0.678 2.632 1.563c0.331 0.442 0.957 0.533 1.4 0.202s0.533-0.957 0.202-1.4z">
+                        </path>
+                    </svg>
+                </c3-icon>
+            </button>
+            <div class="searchbox" hidden>
+                <form class="searchbox-form">
+                    <div class="searchbox-input-wrapper">
+                        <input type="text" class="searchbox-input" autocomplete="off" autocorrect="off"
+                            spellcheck="false" placeholder="在 {{SiteName}} 中搜索">
+                    </div>
+                    <input type="submit" hidden>
+                    <button class="icon-button " aria-haspopup="false">
+                        <c3-icon>
+                            <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24"
+                                viewBox="0 0 24 24" width="24">
+                                <path
+                                    d="M20.87,20.17l-5.59-5.59C16.35,13.35,17,11.75,17,10c0-3.87-3.13-7-7-7s-7,3.13-7,7s3.13,7,7,7c1.75,0,3.35-0.65,4.58-1.71 l5.59,5.59L20.87,20.17z M10,16c-3.31,0-6-2.69-6-6s2.69-6,6-6s6,2.69,6,6S13.31,16,10,16z">
+                                </path>
+                            </svg>
+                        </c3-icon>
+                    </button>
+                </form>
+                <div class="searchbox-dropdown" hidden>
+                    <div class="sbdd_a">
+                        <ul class="sbsb_b">
+                            <li class="sbsb_c">
+                                <div class="sbpqs_d">
+                                    <span class="sbpqs_a">
+                                        视频编辑
+                                    </span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="topbar-header-content">
+                <h2 class="topbar-title">
+                    首页
+                </h2>
+                <button class="icon-button">
+                    <c3-icon>
+                        <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24"
+                            viewBox="0 0 24 24" width="24">
+                            <path
+                                d="M20.87,20.17l-5.59-5.59C16.35,13.35,17,11.75,17,10c0-3.87-3.13-7-7-7s-7,3.13-7,7s3.13,7,7,7c1.75,0,3.35-0.65,4.58-1.71 l5.59,5.59L20.87,20.17z M10,16c-3.31,0-6-2.69-6-6s2.69-6,6-6s6,2.69,6,6S13.31,16,10,16z">
+                            </path>
+                        </svg>
+                    </c3-icon>
+                </button>
+                <button class="icon-button">
+                    <c3-icon>
+                        <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24"
+                            viewBox="0 0 24 24" width="24">
+                            <path
+                                d="M12,16.5c0.83,0,1.5,0.67,1.5,1.5s-0.67,1.5-1.5,1.5s-1.5-0.67-1.5-1.5S11.17,16.5,12,16.5z M10.5,12 c0,0.83,0.67,1.5,1.5,1.5s1.5-0.67,1.5-1.5s-0.67-1.5-1.5-1.5S10.5,11.17,10.5,12z M10.5,6c0,0.83,0.67,1.5,1.5,1.5 s1.5-0.67,1.5-1.5S12.83,4.5,12,4.5S10.5,5.17,10.5,6z">
+                            </path>
+                        </svg>
+                    </c3-icon>
+                </button>
+            </div>
+        </header>
+    </div>
+    <div style="height: 48px;"></div>
+    <div class="container">
+        <div class="main">
+            {{@data=Article}}
+            <div class="article">
+
+                <div class="markdown">
+                    <div class="article-meta">
+                        <ul class="breadcrumb-list">
+                            <li class="breadcrumb-item">
+                                <a href="/admin/articles">首页</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <div class="breadcrumb-guillemet">
+                                    <svg id="icon-navigate_next" viewBox="0 0 24 24">
+                                        <path d="M9.984 6l6 6-6 6-1.406-1.406 4.594-4.594-4.594-4.594z"></path>
+                                    </svg>
+                                </div>
+                                <a href="/admin/topics/{{$FormatCategory|Category}}">{{Category}}</a>
+                            </li>
+
+                        </ul>
+                    </div>
+                    <h1>{{Title}}</h1>
+
+                    <img style="width: 100%;margin: 32px 0" alt="{{Title}}"
+                        src="//static.lucidu.cn/images/{{Thumbnail}}">
+
+                    {{~Content}}
+
+                    {{@end}}
+
+                </div>
+            </div>
+        </div>
+        <aside></aside>
+
+    </div>
+    <div class="menu-container" hidden>
+        <div class="menu-content">
+            <ytm-menu-item>
+                <a class="menu-item-button">登录</a>
+            </ytm-menu-item>
+        </div>
+        <c3-overlay>
+            <button class="hidden-button" aria-label="close"></button>
+        </c3-overlay>
+    </div>
+    <custom-toast id="toast"></custom-toast>
+    {{@JavaScript=
+    <script src="../../topbar-renderer.js"></script>
+    <script src="../../toast.js"></script>
+    }}
+    <script>
+        function writeText(message) {
+            const textarea = document.createElement("textarea");
+            textarea.style.position = 'fixed';
+            textarea.style.right = '100%';
+            document.body.appendChild(textarea);
+            textarea.value = message;
+            textarea.select();
+            document.execCommand('copy');
+            textarea.remove();
+        }
+
+        function bindAllCodeElements() {
+            const toast = document.getElementById('toast');
+            document.querySelectorAll('code')
+                .forEach(x => {
+                    x.addEventListener('click', ev => {
+                        writeText(ev.target.textContent);
+                        toast.setAttribute('message', '已成功复制到剪切板。');
+                    });
+                });
+
+        }
+
+        function lazyLoadImages() {
+            const observer = new IntersectionObserver(function (entries) {
+                Array.prototype.forEach.call(entries, function (entry) {
+                    if (entry.isIntersecting) {
+                        observer.unobserve(entry.target);
+                        entry.target.src = entry.target.getAttribute("data-src");
+                    }
+                });
+            });
+            Array.prototype.forEach.call(document.querySelectorAll('img'), function (image) {
+                if (image.hasAttribute('data-src'))
+                    observer.observe(image);
+            });
+        }
+
+        bindAllCodeElements();
+        lazyLoadImages();
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.querySelectorAll('pre code').forEach((el) => {
+                hljs.highlightElement(el);
+            });
+        });
+
+
+
+        const topbarRenderer = document.querySelector('.topbar-renderer');
+        let yOffset;
+
+
+        function scroll() {
+            const y = window.pageYOffset;
+            if (yOffset > y) {
+                topbarRenderer.className = "topbar-renderer in";
+            } else if (y > yOffset) {
+                // (y <= 48 && y != 0) ||
+                topbarRenderer.className = "topbar-renderer out";
+            }
+            yOffset = y;
+        }
+
+        window.addEventListener('scroll', evt => {
+            scroll();
+        });
+        window.addEventListener('hashchange', evt => {
+            scroll();
+        })
+        scroll();
+        function writeText(message) {
+            const textarea = document.createElement("textarea");
+            textarea.style.position = 'fixed';
+            textarea.style.right = '100%';
+            document.body.appendChild(textarea);
+            textarea.value = message;
+            textarea.select();
+            document.execCommand('copy');
+            textarea.remove();
+        }
+        function substringAfterLast(string, delimiter, missingDelimiterValue) {
+            const index = string.lastIndexOf(delimiter);
+            if (index === -1) {
+                return missingDelimiterValue || string;
+            } else {
+                return string.substring(index + delimiter.length);
+            }
+        }
+        document.querySelector('h1').addEventListener('click',evt=>{
+          writeText(`http://47.106.105.122/admin/editor?u=`+substringAfterLast(location.href,"/"));
+        })
+    </script>
+</body>
+
+</html>

@@ -16,6 +16,7 @@ namespace Psycho
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<IService,Service>();
             services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
             {
                 builder.AllowAnyOrigin()

@@ -11,6 +11,10 @@
             const template = document.createElement('template');
             template.innerHTML = `
     <style>
+    [hidden][hidden] {
+    visibility: hidden;
+    display: none;
+}
     #menu, .menu-container
 {
     position: fixed;
@@ -108,6 +112,9 @@ a
           <a class="menu-item-button" id="action-copy">
           复制链接地址
           </a>
+          <a class="menu-item-button" id="action-copy-title">
+          复制标题
+          </a>
            <a class="menu-item-button" id="action-delete">
          删除
           </a>
@@ -146,14 +153,26 @@ a
                     if (this.callback)
                         this.callback(1, href);
                 });
-            const deleteItemButton = this.root.querySelector('#action-delete');
-            deleteItemButton
+            const copyTitleButton = this.root.querySelector('#action-copy-title');
+            copyTitleButton
                 .addEventListener('click', ev => {
-                    const id = this.element.getAttribute('data-id');
                     menuContainer.style.display = 'none';
                     if (this.callback)
-                        this.callback(2, id);
+                        this.callback(5, this.element);
                 });
+            const deleteItemButton = this.root.querySelector('#action-delete');
+            if (document.cookie) {
+                deleteItemButton
+                    .addEventListener('click', ev => {
+                        const id = this.element.getAttribute('data-id');
+                        menuContainer.style.display = 'none';
+                        if (this.callback)
+                            this.callback(2, id);
+                    });
+            } else {
+                deleteItemButton.setAttribute('hidden', '');
+            }
+
             const downloadItemButton = this.root.querySelector('#action-download');
             downloadItemButton
                 .addEventListener('click', ev => {

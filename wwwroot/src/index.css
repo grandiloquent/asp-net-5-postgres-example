@@ -74,6 +74,11 @@ input[type="checkbox"] {
     cursor: pointer;
 }
 
+[hidden][hidden] {
+    visibility: hidden;
+    display: none;
+}
+
 /*.container {*/
 /*    display: grid;*/
 /*    grid-template-columns: repeat(2, 1fr);*/
@@ -88,6 +93,7 @@ input[type="checkbox"] {
     padding: 0;
     display: block;
     min-width: 0;
+    user-select: none;
 
 }
 

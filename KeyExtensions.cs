@@ -108,31 +108,7 @@ namespace Psycho
             return coupon.ToString();
         }
 
-        public static string GenerateRandomString(this int length)
-        {
-            var coupon = new StringBuilder();
-            var rng = new RNGCryptoServiceProvider();
-            var rnd = new byte[1];
-            var n = 0;
-            while (n < length)
-            {
-                rng.GetBytes(rnd);
-                var c = (char) rnd[0];
-                if (c <= 122 && c >= 97)
-                {
-                    ++n;
-                    coupon.Append(c);
-                }
-            }
-
-            return coupon.ToString();
-        }
-
-        public static bool CheckUniqueId(this string? uniqueId)
-        {
-            return uniqueId is {Length: 6} && uniqueId.All(i => 97 <= i && i <= 122);
-        }
-
+        
         // 计算MD5值
         public static string EncryptString(string str)
         {

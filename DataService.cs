@@ -16,7 +16,7 @@ namespace Psycho
             _connection = new NpgsqlConnection(configuration.GetConnectionString("DbConnectionString"));
         }
 
-        private async Task<List<string>> GetAllDatabases()
+        private async System.Threading.Tasks.Task<List<string>> GetAllDatabases()
         {
             const string listDatabases = "SELECT datname FROM pg_database WHERE datistemplate = false;";
             NpgsqlCommand command =
@@ -31,7 +31,7 @@ namespace Psycho
             return databases;
         }
 
-        private static async Task PerformRead(NpgsqlConnection connection, string cmdText,
+        private static async System.Threading.Tasks.Task PerformRead(NpgsqlConnection connection, string cmdText,
             Action<NpgsqlDataReader> action,
             Action<NpgsqlCommand> cmd = null)
         {
@@ -44,7 +44,7 @@ namespace Psycho
             await connection.CloseAsync();
         }
 
-        private static async Task Perform(NpgsqlConnection connection, string cmdText,
+        private static async System.Threading.Tasks.Task Perform(NpgsqlConnection connection, string cmdText,
             Action<NpgsqlCommand> cmd = null)
         {
             await connection.OpenAsync();
@@ -55,7 +55,7 @@ namespace Psycho
             await connection.CloseAsync();
         }
 
-        public async Task<int> DeleteVideo(int id)
+        public async System.Threading.Tasks.Task<int> DeleteVideo(int id)
         {
             var result = 0;
             const string cmdText =
@@ -100,7 +100,7 @@ namespace Psycho
             await _connection.CloseAsync();
         }
 
-        public async Task<int> InsertVideo(Video video)
+        public async System.Threading.Tasks.Task<int> InsertVideo(Video video)
         {
             var result = 0;
             const string cmdText =
@@ -128,7 +128,7 @@ namespace Psycho
             return result;
         }
 
-        public async Task InsertVideos(IEnumerable<Video> videos)
+        public async System.Threading.Tasks.Task InsertVideos(IEnumerable<Video> videos)
         {
             await _connection.OpenAsync();
             await using NpgsqlCommand command =
@@ -156,7 +156,7 @@ namespace Psycho
             await _connection.CloseAsync();
         }
 
-        public async Task<IEnumerable<string>> ListAllDatabases()
+        public async System.Threading.Tasks.Task<IEnumerable<string>> ListAllDatabases()
         {
             await _connection.OpenAsync();
             var databases = await GetAllDatabases();
@@ -164,7 +164,7 @@ namespace Psycho
             return databases;
         }
 
-        public async Task<IEnumerable<Video>> QueryAllVideos()
+        public async System.Threading.Tasks.Task<IEnumerable<Video>> QueryAllVideos()
         {
             List<Video> videos = new();
             await _connection.OpenAsync();
@@ -193,7 +193,7 @@ namespace Psycho
             return videos;
         }
 
-        public async Task<Video> QueryVideoByUrl(string url)
+        public async System.Threading.Tasks.Task<Video> QueryVideoByUrl(string url)
         {
             await _connection.OpenAsync();
             await using NpgsqlCommand command =
@@ -233,7 +233,7 @@ namespace Psycho
         }
 
         // Use keywords to fuzzy query the video through word segmentation
-        public async Task<IEnumerable<Video>> QueryVideos(string keyword, int factor, int type)
+        public async System.Threading.Tasks.Task<IEnumerable<Video>> QueryVideos(string keyword, int factor, int type)
         {
             List<Video> videos = new();
             await PerformRead(_connection,
@@ -269,7 +269,7 @@ namespace Psycho
             return videos;
         }
 
-        public async Task<IEnumerable<Video>> QueryRandomVideos()
+        public async System.Threading.Tasks.Task<IEnumerable<Video>> QueryRandomVideos()
         {
             List<Video> videos = new();
             await PerformRead(_connection,
@@ -299,18 +299,19 @@ namespace Psycho
             return videos;
         }
 
-        public async Task RecordViews(int id)
+        public async System.Threading.Tasks.Task RecordViews(int id, int duration)
         {
             await Perform(_connection,
-                "UPDATE videos set views = coalesce(views,0) + 1,update_at = @UpdateAt WHERE id = @Id",
+                "UPDATE videos set views = coalesce(views,0) + 1,duration= GREATEST(duration,@Duration),update_at = @UpdateAt WHERE id = @Id",
                 cmd =>
                 {
                     cmd.Parameters.AddWithValue("@Id", id);
                     cmd.Parameters.AddWithValue("@UpdateAt", DateTime.UtcNow.GetUnixTimeStamp());
+                    cmd.Parameters.AddWithValue("@Duration", duration);
                 });
         }
 
-        public async Task UpdateVideo(Video video)
+        public async System.Threading.Tasks.Task UpdateVideo(Video video)
         {
             await Perform(_connection,
                 "UPDATE videos set title = @Title, url = @Url, thumbnail = @Thumbnail, publish_date = @PublishDate, duration = @Duration, create_at = @CreateAt, update_at = @UpdateAt, views = @Views, type = @Type, hidden = @Hidden WHERE id = @Id",
@@ -330,7 +331,7 @@ namespace Psycho
                 });
         }
 
-        public async Task<IEnumerable<Video>> GetVideos(int count = 20, int factor = 0, Order order = Order.UpdateAt,
+        public async System.Threading.Tasks.Task<IEnumerable<Video>> GetVideos(int count = 20, int factor = 0, Order order = Order.UpdateAt,
             int type = 0)
         {
             List<Video> videos = new();
